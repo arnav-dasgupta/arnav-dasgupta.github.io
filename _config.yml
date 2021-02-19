@@ -1,6 +1,6 @@
 title: "Blog Title"
 author: "Arnav Dasgupta"
-description: "Made with <b style=\"color: #f45;\">&lt;3</b>"
+description: 'Made with <b style="color: #f45;">&lt;3</b>'
 permalink: /:title/
 lang: "en"
 excerpt_separator: "\n\n\n"
@@ -8,25 +8,29 @@ date_format: "%B %d, %Y"
 
 # Layout
 
-show_social: true          # show site description and social links in the footer
-show_excerpts: true        # show article excerpts on the home page
-show_frame: true           # adds a gray frame to the site
-show_sidebar: false        # show a sidebar instead of the usual header
+show_social: true # show site description and social links in the footer
+show_excerpts: true # show article excerpts on the home page
+show_frame: true # adds a gray frame to the site
+show_sidebar: false # show a sidebar instead of the usual header
 
 # Menu
 
 navigation:
-  - {file: "index.html", icon: home}
-  - {file: "README.md", icon: address-card}
+  - { file: "index.html", icon: home }
+  - { file: "README.md", icon: address-card }
 
-external:                  # see http://fontawesome.com/icons
-  - {title: Mail, icon: envelope, url: "mailto:arnavdasgupta98@gmail.com"}
-  - {title: Github, icon: github, url: "https://github.com/arnav-dasgupta"}
-  - {title: Linkedin, icon: linkedin, url: "https://www.linkedin.com/in/arnavdg98/}
+external: # see http://fontawesome.com/icons
+  - { title: Mail, icon: envelope, url: "mailto:arnavdasgupta98@gmail.com" }
+  - { title: Github, icon: github, url: "https://github.com/arnav-dasgupta" }
+  - {
+      title: Linkedin,
+      icon: linkedin,
+      url: "https://www.linkedin.com/in/arnavdg98/",
+    }
 
 comments:
 #  disqus_shortname: ""    # see https://disqus.com/
 #  isso_domain: ""         # see https://posativ.org/isso/
 
 plugins:
- - jekyll-feed
+  - jekyll-feed
