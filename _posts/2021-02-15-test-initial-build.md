@@ -3,6 +3,7 @@ title: "Welcome"
 layout: post
 ---
 
+### Ishaan Bhatia
 Automate post uploading via `_posts` directory. edit and re-build the site to see changes. using `jekyll serve`.
 Test Ruby installer 2.7 + Devkit. Test xmake build deploy.
 
