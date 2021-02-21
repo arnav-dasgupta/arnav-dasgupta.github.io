@@ -1,6 +1,6 @@
 title: "Nodewind"
 author: "Arnav Dasgupta"
-description: 'Made with <b style="color: #f45;">&lt;3</b>'
+description: 'Personal blog by Arnav Dasgupta'
 permalink: /:title/
 lang: "en"
 excerpt_separator: "\n\n\n"
