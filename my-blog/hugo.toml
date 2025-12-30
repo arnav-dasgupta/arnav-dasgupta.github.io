@@ -1,0 +1,28 @@
+baseURL = "https://yourname.github.io/"
+languageCode = "en-us"
+title = "Welcome"
+theme = "terminal"
+
+[params]
+  # choose one of ["orange", "blue", "red", "green", "pink"]
+  themeColor = "orange" 
+  
+  # Set content to your blog directory
+  contentTypeName = "posts" 
+  # Text for the read-more link used by the theme
+  ReadMore = "Read more"
+
+  # The text that appears next to the cursor in the header
+  [params.Logo]
+  logoText = "Arnav Dasgupta"
+  
+  # A brief description for SEO
+  description = "A collection of system post-mortems and engineering notes."
+
+[markup.highlight]
+  noClasses = false
+
+[[menu.main]]
+  name = "About Me"
+  url = "/about/"
+  weight = 10
