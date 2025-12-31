@@ -1,6 +1,6 @@
 baseURL = "https://arnav-dasgupta.github.io/"
 languageCode = "en-us"
-title = "Welcome"
+title = ".log"
 theme = "terminal"
 
 [params]
