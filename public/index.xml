@@ -13,7 +13,7 @@
       <link>http://localhost:1313/about/</link>
       <pubDate>Tue, 30 Dec 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/about/</guid>
-      <description></description>
+      <description>&lt;h1 id=&#34;whoami&#34;&gt;whoami&lt;/h1&gt;&#xA;&lt;p&gt;&lt;strong&gt;Arnav Dasgupta&lt;/strong&gt;&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;strong&gt;Backend Engineer&lt;/strong&gt; specialized in highly scalable distributed systems in the cloud.&#xA;Currently building at &lt;strong&gt;SAP Labs India&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;hr&gt;&#xA;&lt;h3 id=&#34;-system-info&#34;&gt;$ system &amp;ndash;info&lt;/h3&gt;&#xA;&lt;p&gt;I am a performance-oriented Software Engineer with over 5 years of experience in designing and scaling service-oriented architectures for enterprise cloud platforms.&lt;/p&gt;&#xA;&lt;p&gt;My day-to-day involves building the future of context-based, cross-product and internal observability at SAP with the &lt;strong&gt;&lt;a href=&#34;https://support.sap.com/en/alm/sap-cloud-alm/operations/expert-portal/data-collection-infrastructure.html&#34;&gt;Cloud ALM NGDCI&lt;/a&gt;&lt;/strong&gt; team. I focus on building resilient systems, designing clean API contracts, and engineering high-throughput low latency systems for efficient data transfer. I’m currently looking for new backend opportunities in the &lt;strong&gt;EU region&lt;/strong&gt;.&lt;/p&gt;</description>
     </item>
     <item>
       <title>The 90% Seek Mystery: Debugging Apple TV on Budget Android Hardware</title>
