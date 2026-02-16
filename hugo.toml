@@ -23,8 +23,8 @@ theme = "terminal"
   noClasses = false
 
 [[menu.main]]
-  name = "About Me"
-  url = "/about/"
+  name = "Blog"
+  url = "/posts/"
   weight = 10
 
 [caches]
