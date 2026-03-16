@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN SYSTEM — "Living Terminal"
+       ============================================ */
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111825;
+      --bg-tertiary: #1a1f2e;
+      --bg-elevated: #1e2538;
+      --accent-green: #00e5a0;
+      --accent-green-dim: #00e5a033;
+      --accent-green-mid: #00e5a066;
+      --accent-amber: #f7b731;
+      --accent-amber-dim: #f7b73133;
+      --accent-blue: #5eafff;
+      --accent-red: #ff6b6b;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a0a8b7;
+      --text-muted: #5a6375;
+      --text-dim: #3d4556;
+      --border-color: #1e2a3a;
+      --border-bright: #2a3a4e;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+      --glow-green: 0 0 20px #00e5a022, 0 0 40px #00e5a011;
+      --glow-amber: 0 0 20px #f7b73122;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-green-dim) var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-green-dim); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-green-mid); }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Subtle scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.015) 2px,
+        rgba(0, 0, 0, 0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* ============================================
+       NAVIGATION — tmux-style tab bar
+       ============================================ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 48px;
+    }
+
+    .nav-session {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-session-indicator {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      list-style: none;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .nav-tab {
+      padding: 0.75rem 1.25rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-right: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-tab:first-child { border-left: 1px solid var(--border-color); }
+
+    .nav-tab:hover {
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+    }
+
+    .nav-tab.active {
+      color: var(--accent-green);
+      background: var(--bg-primary);
+    }
+
+    .nav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0; right: 0;
+      height: 1px;
+      background: var(--bg-primary);
+    }
+
+    .nav-tab-index {
+      color: var(--text-dim);
+    }
+
+    .nav-status {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    /* ============================================
+       HERO — Boot Sequence Terminal
+       ============================================ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6rem 2rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .terminal-window {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--glow-green), 0 20px 60px rgba(0,0,0,0.4);
+      max-width: 820px;
+    }
+
+    .terminal-titlebar {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-color);
+      gap: 0.5rem;
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.red { background: #ff5f57; }
+    .terminal-dot.yellow { background: #febc2e; }
+    .terminal-dot.green { background: #28c840; }
+
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: 0.75rem;
+    }
+
+    .terminal-body {
+      padding: 1.75rem 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+
+    .terminal-line {
+      opacity: 0;
+      animation: lineReveal 0.3s ease forwards;
+      white-space: nowrap;
+    }
+
+    .terminal-line:nth-child(1) { animation-delay: 0.3s; }
+    .terminal-line:nth-child(2) { animation-delay: 0.8s; }
+    .terminal-line:nth-child(3) { animation-delay: 1.3s; }
+    .terminal-line:nth-child(4) { animation-delay: 1.7s; }
+    .terminal-line:nth-child(5) { animation-delay: 2.1s; }
+    .terminal-line:nth-child(6) { animation-delay: 2.5s; }
+    .terminal-line:nth-child(7) { animation-delay: 2.8s; }
+    .terminal-line:nth-child(8) { animation-delay: 3.1s; }
+    .terminal-line:nth-child(9) { animation-delay: 3.4s; }
+    .terminal-line:nth-child(10) { animation-delay: 3.7s; }
+
+    @keyframes lineReveal {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .prompt { color: var(--accent-green); }
+    .command { color: var(--text-primary); font-weight: 500; }
+    .output { color: var(--text-secondary); }
+    .output-highlight { color: var(--accent-amber); }
+    .output-blue { color: var(--accent-blue); }
+    .output-dim { color: var(--text-muted); }
+    .comment { color: var(--text-dim); font-style: italic; }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background: var(--accent-green);
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .hero-subtitle {
+      margin-top: 3rem;
+      font-family: var(--font-sans);
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.8;
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+      animation-delay: 4s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-cta {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+      animation-delay: 4.3s;
+    }
+
+    .btn-primary {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent-green);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 20px var(--accent-green-dim);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-bright);
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent-green-dim);
+      color: var(--accent-green);
+    }
+
+    /* ============================================
+       SECTION — Environment Variables (Stats)
+       ============================================ */
+    .section {
+      padding: 5rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border-color), transparent);
+    }
+
+    .section-header .prompt { margin-right: 0.25rem; }
+
+    .env-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .env-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.5rem;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .env-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--accent-green);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .env-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .env-card:hover::before { opacity: 1; }
+
+    .env-key {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .env-value {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .env-desc {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .env-value .accent { color: var(--accent-green); }
+    .env-value .amber { color: var(--accent-amber); }
+
+    /* ============================================
+       SECTION — Latest Posts (ls -la output)
+       ============================================ */
+    .posts-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .posts-table thead th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      color: var(--text-dim);
+      font-weight: 400;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .posts-table tbody tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .posts-table tbody tr:hover {
+      background: var(--bg-secondary);
+    }
+
+    .posts-table tbody tr:hover .post-title {
+      color: var(--accent-green);
+    }
+
+    .posts-table td {
+      padding: 1rem;
+      vertical-align: middle;
+    }
+
+    .post-permissions {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .post-date {
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .post-size {
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .post-title {
+      color: var(--text-primary);
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .post-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .tag-ml { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed33; }
+    .tag-debug { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b33; }
+    .tag-python { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f633; }
+    .tag-perf { background: #ef444422; color: #f87171; border: 1px solid #ef444433; }
+    .tag-infra { background: #00e5a022; color: #00e5a0; border: 1px solid #00e5a033; }
+
+    /* ============================================
+       SECTION — Featured Project
+       ============================================ */
+    .project-featured {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      transition: all 0.25s ease;
+    }
+
+    .project-featured:hover {
+      border-color: var(--border-bright);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    }
+
+    .project-info {
+      padding: 2.5rem;
+    }
+
+    .project-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent-amber);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .project-name {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .project-desc {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-tech {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-tech-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.7rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      color: var(--text-muted);
+    }
+
+    .project-visual {
+      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+    }
+
+    /* 3D scatter plot visualization */
+    .scatter-vis {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .scatter-axis {
+      position: absolute;
+      stroke: var(--border-bright);
+      stroke-width: 1;
+    }
+
+    .scatter-dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .scatter-dot:nth-child(odd) { animation-delay: -1.5s; }
+
+    .scatter-label {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+
+    /* Grid pattern background */
+    .project-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.3;
+    }
+
+    /* ============================================
+       SECTION — Status / CTA Bar
+       ============================================ */
+    .status-bar {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .status-text {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .status-text .blink {
+      animation: blink 1.2s step-end infinite;
+    }
+
+    .status-text .green { color: var(--accent-green); }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 4rem auto 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--accent-green); }
+
+    .footer-exit {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-exit .prompt { color: var(--accent-green); }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+      .nav-status { display: none; }
+      .nav-tabs { font-size: 0.65rem; }
+      .nav-tab { padding: 0.75rem 0.75rem; }
+      .hero { padding: 5rem 1rem 3rem; }
+      .terminal-body { padding: 1.25rem; font-size: 0.8rem; }
+      .section { padding: 3rem 1rem; }
+      .env-grid { grid-template-columns: 1fr; }
+      .project-featured { grid-template-columns: 1fr; }
+      .project-visual { min-height: 200px; }
+      .status-bar { flex-direction: column; text-align: center; }
+      .posts-table .col-perms,
+      .posts-table .col-size { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================
+       NAVIGATION
+       ============================================ -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab active" href="#">
+          <span class="nav-tab-index">0:</span>home
+        </a>
+        <a class="nav-tab" href="#">
+          <span class="nav-tab-index">1:</span>about
+        </a>
+        <a class="nav-tab" href="#">
+          <span class="nav-tab-index">2:</span>blog
+        </a>
+        <a class="nav-tab" href="#">
+          <span class="nav-tab-index">3:</span>projects
+        </a>
+        <a class="nav-tab" href="#">
+          <span class="nav-tab-index">4:</span>contact
+        </a>
+        <a class="nav-tab" href="#">
+          <span class="nav-tab-index">5:</span>resume
+        </a>
+      </div>
+      <div class="nav-status">utf-8 | LF | 09:42</div>
+    </div>
+  </nav>
+
+  <!-- ============================================
+       HERO SECTION
+       ============================================ -->
+  <section class="hero">
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">bash — arnav@workstation:~</span>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line">
+          <span class="prompt">~$</span> <span class="command">whoami</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output">arnav-dasgupta</span>
+        </div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">
+          <span class="prompt">~$</span> <span class="command">cat /etc/motd</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output-highlight">Software Engineer</span> <span class="output">specialized in</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output">highly scalable</span> <span class="output-blue">distributed systems</span> <span class="output">in the cloud.</span>
+        </div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">
+          <span class="output-dim">Currently building at</span> <span class="output">SAP Labs India</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output-dim">Exploring opportunities in</span> <span class="output-highlight">EU region</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">~$</span> <span class="cursor"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="hero-subtitle">
+      I design resilient, high-throughput backend systems and write about debugging, 
+      distributed architectures, and the craft of building software that doesn't break at 3 AM.
+    </p>
+
+    <div class="hero-cta">
+      <a href="#" class="btn-primary">
+        <span>$</span> read blog
+      </a>
+      <a href="#" class="btn-secondary">
+        <span>$</span> view projects
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================================
+       ENV VARIABLES — Quick Stats
+       ============================================ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="prompt">~$</span> printenv | grep ENGINEER
+    </div>
+    <div class="env-grid">
+      <div class="env-card">
+        <div class="env-key">$EXPERIENCE</div>
+        <div class="env-value"><span class="accent">5+</span> years</div>
+        <div class="env-desc">Building production backend systems</div>
+      </div>
+      <div class="env-card">
+        <div class="env-key">$DOMAIN</div>
+        <div class="env-value">Distributed <span class="amber">Systems</span></div>
+        <div class="env-desc">Microservices, event-driven, cloud-native</div>
+      </div>
+      <div class="env-card">
+        <div class="env-key">$STACK</div>
+        <div class="env-value">Java &middot; Node <span class="accent">&middot;</span> K8s</div>
+        <div class="env-desc">Spring Boot, Express, Docker, AWS/GCP</div>
+      </div>
+      <div class="env-card">
+        <div class="env-key">$FOCUS</div>
+        <div class="env-value">Reliability <span class="amber">&amp;</span> Scale</div>
+        <div class="env-desc">Low-latency, high-throughput, zero-downtime</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LATEST POSTS — ls output
+       ============================================ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="prompt">~$</span> ls -la ~/posts/ --sort=date
+    </div>
+    <table class="posts-table">
+      <thead>
+        <tr>
+          <th class="col-perms">permissions</th>
+          <th>date</th>
+          <th class="col-size">size</th>
+          <th>filename</th>
+          <th>tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="post-permissions col-perms">-rw-r--r--</td>
+          <td class="post-date">Jan 28 2026</td>
+          <td class="post-size col-size">4.2K</td>
+          <td class="post-title">visualizing-sentence-similarity-in-3d.md</td>
+          <td class="post-tags">
+            <span class="tag tag-ml">ml</span>
+            <span class="tag tag-python">python</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="post-permissions col-perms">-rw-r--r--</td>
+          <td class="post-date">Dec 26 2025</td>
+          <td class="post-size col-size">3.8K</td>
+          <td class="post-title">the-90-percent-seek-mystery.md</td>
+          <td class="post-tags">
+            <span class="tag tag-debug">debugging</span>
+            <span class="tag tag-perf">performance</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="post-permissions col-perms">-rw-r--r--</td>
+          <td class="post-date">--- -- ----</td>
+          <td class="post-size col-size">~5K</td>
+          <td class="post-title" style="color: var(--text-dim); font-style: italic;">next-post-coming-soon.md</td>
+          <td class="post-tags">
+            <span class="tag tag-infra">infra</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================
+       FEATURED PROJECT
+       ============================================ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="prompt">~$</span> git log --oneline projects/ -1
+    </div>
+    <div class="project-featured">
+      <div class="project-info">
+        <div class="project-label">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9z"/></svg>
+          pinned repository
+        </div>
+        <div class="project-name">latent-space-sampler</div>
+        <div class="project-desc">
+          An interactive tool that maps the high-dimensional geometry of how language models 
+          "see" text into a 3D space — visualizing the cosine similarity between two sample 
+          sentences in real time.
+        </div>
+        <div class="project-tech">
+          <span class="project-tech-tag">Python</span>
+          <span class="project-tech-tag">Streamlit</span>
+          <span class="project-tech-tag">sentence-transformers</span>
+          <span class="project-tech-tag">PCA</span>
+        </div>
+        <a href="#" class="btn-secondary">
+          <span>$</span> open --live
+        </a>
+      </div>
+      <div class="project-visual">
+        <!-- Abstract 3D scatter visualization -->
+        <div class="scatter-vis">
+          <div class="scatter-dot" style="top:25%;left:30%;background:var(--accent-green);box-shadow:0 0 10px var(--accent-green);"></div>
+          <div class="scatter-dot" style="top:35%;left:45%;background:var(--accent-green);box-shadow:0 0 8px var(--accent-green);opacity:0.7;width:6px;height:6px;"></div>
+          <div class="scatter-dot" style="top:55%;left:65%;background:var(--accent-amber);box-shadow:0 0 10px var(--accent-amber);"></div>
+          <div class="scatter-dot" style="top:60%;left:50%;background:var(--accent-amber);box-shadow:0 0 8px var(--accent-amber);opacity:0.7;width:6px;height:6px;"></div>
+          <div class="scatter-dot" style="top:40%;left:55%;background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue);opacity:0.5;width:5px;height:5px;"></div>
+          <div class="scatter-dot" style="top:70%;left:35%;background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue);opacity:0.5;width:5px;height:5px;"></div>
+          <div class="scatter-dot" style="top:20%;left:70%;background:var(--accent-green);box-shadow:0 0 6px var(--accent-green);opacity:0.4;width:4px;height:4px;"></div>
+          <div class="scatter-dot" style="top:75%;left:55%;background:var(--accent-amber);box-shadow:0 0 6px var(--accent-amber);opacity:0.4;width:4px;height:4px;"></div>
+          <span class="scatter-label" style="top:18%;left:28%;color:var(--accent-green);">sentence_a</span>
+          <span class="scatter-label" style="top:48%;left:63%;color:var(--accent-amber);">sentence_b</span>
+          <span class="scatter-label" style="bottom:12%;right:15%;color:var(--text-dim);">cosine_sim: 0.73</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       STATUS BAR / CTA
+       ============================================ -->
+  <section class="section">
+    <div class="status-bar">
+      <div class="status-text">
+        <span class="green">STATUS:</span> Open to backend engineering roles in the <span class="green">EU region</span>
+        <span class="blink">_</span>
+      </div>
+      <a href="#" class="btn-primary">
+        <span>$</span> get-in-touch
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================================
+       FOOTER
+       ============================================ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-exit">
+        <span class="prompt">~$</span> <span style="color: var(--text-muted);">exit 0</span>
+      </div>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">YouTube</a>
+        <a href="#">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+</body>
+</html>

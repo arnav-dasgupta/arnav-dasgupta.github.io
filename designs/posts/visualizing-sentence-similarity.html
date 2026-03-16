@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizing Sentence Similarity in 3D — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <link rel="stylesheet" href="../css/post.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab" href="../index.html"><span class="nav-tab-index">0:</span>home</a>
+        <a class="nav-tab" href="../about.html"><span class="nav-tab-index">1:</span>about</a>
+        <a class="nav-tab active" href="../blog/index.html"><span class="nav-tab-index">2:</span>blog</a>
+        <a class="nav-tab" href="../projects.html"><span class="nav-tab-index">3:</span>projects</a>
+        <a class="nav-tab" href="../contact.html"><span class="nav-tab-index">4:</span>contact</a>
+        <a class="nav-tab" href="../resume.html"><span class="nav-tab-index">5:</span>resume</a>
+      </div>
+      <div class="nav-status">utf-8 | LF | <span id="live-clock">--:--</span></div>
+    </div>
+  </nav>
+
+  <!-- ARTICLE LAYOUT -->
+  <div class="article-layout">
+
+    <!-- MAIN ARTICLE -->
+    <article>
+
+      <!-- Back Link -->
+      <a href="../blog/index.html" class="back-link">
+        <span class="arrow">&larr;</span>
+        <span class="prompt">$</span> cd ../posts
+      </a>
+
+      <!-- ARTICLE HEADER -->
+      <header class="article-header">
+        <div class="article-meta-top">
+          <div class="article-tags">
+            <span class="tag tag-ml">ml</span>
+            <span class="tag tag-python">python</span>
+            <span class="tag tag-visualization">visualization</span>
+          </div>
+        </div>
+
+        <h1 class="article-title">Visualizing Sentence Similarity in 3D</h1>
+
+        <p class="article-subtitle">Building an interactive 3D visualization to explore how LLMs &#39;see&#39; sentences.</p>
+
+        <div class="article-meta-bottom">
+          <div class="meta-item">
+            <span class="label">author:</span>
+            <span class="value">arnav-dasgupta</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">date:</span>
+            <span class="value">28 Jan 2026</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">read:</span>
+            <span class="value">~6 min</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">words:</span>
+            <span class="value">1,192</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ARTICLE BODY -->
+      <div class="article-body">
+        <p>Building intuition for how machine learning models understand language is notoriously difficult. Embeddings, which are high-dimensional vectors that encode meaning, are somewhat opaque. LLMs also deal with higher dimensional spaces which are beyond our mental model of the 3D world. You can&#39;t exactly <em>look</em> at 768 dimensions.</p>
+<p>So I tried to build a 3D visualization tool that allows exploration of how sentences relate to each other in a higher-dimensional semantic space.</p>
+<p><a href="https://latent-space-sampler.streamlit.app/" target="_blank" rel="noopener noreferrer">Latent Space Sampler</a> takes two sentences, runs them through a sentence-transformer model, and plots their embedding vectors in an interactive 3D space. You can type in &quot;Batman is Bruce Wayne&quot; and &quot;Superman is Clarke Kent,&quot; hit analyze, and watch two vectors materialize, pointing in almost the same direction. </p>
+<p>This post walks through the key ideas behind it: what embeddings actually are, how cosine similarity works (and why it&#39;s about <em>angles</em>, not distances), and the tricky problem of cramming 768 dimensions into 3 so that we can visualize it. </p>
+<h2 id="what-is-an-embedding">What Is an Embedding?</h2><p>When a language model reads a sentence, it doesn&#39;t process words directly as these models don&#39;t really understand words as we do. The LLM converts input sentences into a dense vector. This is a list of floating-point numbers that encodes the representation of that sentence as a point in high-dimensional space. The key insight is that sentences with similar meanings end up <em>geometrically</em> close to each other in this space. That geometric structure is what makes embeddings so powerful: similarity in meaning becomes similarity in position, and that&#39;s something a machine can reason about.</p>
+<p>For this project, I used the <a href="https://huggingface.co/sentence-transformers/all-mpnet-base-v2" target="_blank" rel="noopener noreferrer">all-mpnet-base-v2</a> model from the <code>sentence-transformers</code> library to generate these embeddings. It&#39;s a 110M-parameter model fine-tuned on over a billion sentence pairs, and it produces 768-dimensional embeddings. That means every sentence you feed it comes back as 768 numbers:</p>
+<div class="code-block">
+    <div class="code-block-header">
+      <span class="code-dot red"></span>
+      <span class="code-dot yellow"></span>
+      <span class="code-dot green"></span>
+      <span class="code-lang">python</span>
+    </div>
+    <pre class="code-body"><code class="hljs language-python"><span class="hljs-keyword">from</span> sentence_transformers <span class="hljs-keyword">import</span> SentenceTransformer
+
+model = SentenceTransformer(<span class="hljs-string">&#x27;all-mpnet-base-v2&#x27;</span>)
+embeddings = model.encode([<span class="hljs-string">&quot;Batman is Bruce Wayne&quot;</span>, <span class="hljs-string">&quot;Superman is Clarke Kent&quot;</span>])
+<span class="hljs-comment"># embeddings.shape -&gt; (2, 768)</span></code></pre>
+  </div><p>Each of those 768 numbers represents some learned feature of the sentence. These are not human-named features, but ones that the model discovered during training. Some might correlate loosely with sentiment, others with topic, others with syntactic structure. Most aren&#39;t easy to interpret on their own. But together, they place the sentence at a precise coordinate in a 768-dimensional space.</p>
+<br>
+<br>
+
+<p><img src="../content/images/embeddding-pipeline.png" alt="Embedding Pipeline" title="A sentence enters the model and exits as a 768-dimensional vector"></p>
+<br>
+
+
+<p>The important intuition: in this space, <strong>meaning is proximity</strong>. &quot;The cat sat on the mat&quot; and &quot;A feline rested on the rug&quot; will land near each other, while &quot;Quarterly earnings exceeded projections&quot; will be somewhere far away. The model has learned to organize language geometrically.</p>
+<h2 id="cosine-similarity">Cosine Similarity</h2><p>Now we have two sentences as two vectors in 768-dimensional space. How do we measure how similar they are?</p>
+<p>The naive approach would be to use Euclidean distance where we just measure the straight-line gap between the two points. But this has a problem: it&#39;s sensitive to magnitude. A long vector and a short vector pointing in the <em>exact same direction</em> would register as &quot;far apart&quot; even though they represent the same meaning at different scales.</p>
+<p>Cosine similarity solves this by ignoring magnitude entirely. It only cares about the <strong>angle</strong> between the two vectors. Two vectors pointing in the same direction have a cosine similarity of 1.0, regardless of how long they are. Two perpendicular vectors score 0. Two vectors pointing in opposite directions score -1.</p>
+<p>The formula:</p>
+<div class="code-block">
+    <div class="code-block-header">
+      <span class="code-dot red"></span>
+      <span class="code-dot yellow"></span>
+      <span class="code-dot green"></span>
+      <span class="code-lang">plaintext</span>
+    </div>
+    <pre class="code-body"><code class="hljs language-plaintext">cos(θ) = (A . B) / (||A|| * ||B||)</code></pre>
+  </div><p>The numerator is the dot product (sum of element-wise multiplications). The denominator normalizes by both vector magnitudes, effectively projecting everything onto the unit sphere. In code:</p>
+<div class="code-block">
+    <div class="code-block-header">
+      <span class="code-dot red"></span>
+      <span class="code-dot yellow"></span>
+      <span class="code-dot green"></span>
+      <span class="code-lang">python</span>
+    </div>
+    <pre class="code-body"><code class="hljs language-python">cos_sim = np.dot(embeddings[<span class="hljs-number">0</span>], embeddings[<span class="hljs-number">1</span>]) / (
+    np.linalg.norm(embeddings[<span class="hljs-number">0</span>]) * np.linalg.norm(embeddings[<span class="hljs-number">1</span>])
+)</code></pre>
+  </div><p><img src="../content/images/cosine-similarity.png.png" alt="Cosine Similarity" title="Two vectors from the origin with the angle between them labeled"></p>
+<p><strong>Diagram: &quot;Cosine Similarity&quot;</strong> -- <em>Two arrows from the origin in 2D. When the angle between them is small (say 10 degrees), cosine similarity is high (~0.98) -- the sentences mean similar things. When the angle is close to 90 degrees, cosine similarity drops to ~0 -- semantically unrelated.</em></p>
+<p>One design decision worth highlighting: in the app, <strong>cosine similarity is computed on the full 768-dimensional embeddings</strong>, not on the 3D-reduced coordinates. This is critical. The 3D plot is an approximation for human eyes; the similarity score is mathematically exact. Computing it after dimensionality reduction would introduce compounding information loss -- you&#39;d be measuring a shadow of the real relationship.</p>
+<h2 id="the-visualization-problem-768-dimensions-into-3">The Visualization Problem: 768 Dimensions Into 3</h2><p>So we have two 768-dimensional vectors and a similarity score. But how do you <em>show</em> that to a human? We can perceive three spatial dimensions, and even that calls for an interactive 3D chart to do well.</p>
+<p>This is where PCA (Principal Component Analysis) comes in. PCA answers the question: &quot;If I could only keep 3 directions out of 768, which 3 would preserve the most information?&quot;</p>
+<p>It works by finding the axes along which the data varies the most. The first principal component is the direction of maximum variance. The second is the direction of maximum variance <em>orthogonal to the first</em>. And so on. By projecting our 768-d vectors onto the top 3 principal components, we get 3D coordinates that capture as much of the original structure as possible:</p>
+<div class="code-block">
+    <div class="code-block-header">
+      <span class="code-dot red"></span>
+      <span class="code-dot yellow"></span>
+      <span class="code-dot green"></span>
+      <span class="code-lang">python</span>
+    </div>
+    <pre class="code-body"><code class="hljs language-python"><span class="hljs-keyword">from</span> sklearn.decomposition <span class="hljs-keyword">import</span> PCA
+
+pca = PCA(n_components=<span class="hljs-number">3</span>, random_state=<span class="hljs-number">42</span>)
+coords = pca.fit_transform(embeddings)  <span class="hljs-comment"># (n, 768) -&gt; (n, 3)</span></code></pre>
+  </div><p>The caveat: PCA is a <strong>lossy</strong> projection. Two sentences that are very similar in 768 dimensions might appear slightly farther apart in 3D if most of their similarity lives in dimensions that PCA discards. That&#39;s another reason the cosine similarity score is computed before reduction - the number is the truth, the plot is the illustration.</p>
+<h2 id="the-anchor-trick">The Anchor Trick</h2><p>Plotting two vectors in 3D doesn&#39;t tell you much on its own as it is just two arrows in an empty space. There&#39;s no frame of reference.</p>
+<p>This is where <strong>anchor sentences</strong> come in. Three hardcoded phrases from wildly different semantic domains:</p>
+<div class="code-block">
+    <div class="code-block-header">
+      <span class="code-dot red"></span>
+      <span class="code-dot yellow"></span>
+      <span class="code-dot green"></span>
+      <span class="code-lang">python</span>
+    </div>
+    <pre class="code-body"><code class="hljs language-python">anchors = [<span class="hljs-string">&quot;Global finance&quot;</span>, <span class="hljs-string">&quot;Molecular biology&quot;</span>, <span class="hljs-string">&quot;Abstract art&quot;</span>]</code></pre>
+  </div><p>These get embedded and projected alongside the user&#39;s input. In the visualization, they appear as muted gray vectors - thin lines, small semi-transparent dots, no labels. They&#39;re there purely as spatial landmarks.</p>
+<p>Now when you type in two sentences about superheroes and see both vectors clustering near each other and away from &quot;Molecular biology,&quot; the 3D space starts to feel meaningful. The anchors provide the semantic coordinate system that makes the visualization interpretable. Without them, it&#39;s like looking at a map with no cities.</p>
+<h2 id="takeaways">Takeaways</h2><ol>
+<li><p><strong>The Math</strong> - Cosine similarity measures the direction two vectors point, not how far apart they are. Two identical sentences scaled to different magnitudes still score 1.0. This is why it&#39;s preferred over Euclidean distance in NLP as the semantics live in the angle and not the length.</p>
+</li>
+<li><p><strong>The Intuition</strong> - PCA gives you a picture, but the full story lives in 768 dimensions. Always compute your metrics on the original embeddings, and use the projection for building intuition. The map is not the territory.</p>
+</li>
+<li><p><strong>Visualizing</strong> - Two vectors alone in 3D space are like two dots on a blank page -- technically accurate, but hard to learn from. Reference points from diverse semantic domains turn an abstract geometry exercise into something your brain can actually work with.</p>
+</li>
+</ol>
+<br>
+<br>
+It's easy to think of models as black boxes that spit out tokens, and to forget that there's a rich, structured space inside them where "Batman" and "Superman" are neighbors, and "Quarterly earnings" lives in a completely different region. The math behind it isn't particularly exotic, but the result is a window into how a neural network organizes human language.
+
+      </div>
+
+      <!-- POST FOOTER -->
+      <div class="post-footer">
+
+        <!-- Share -->
+        <div class="share-bar">
+          <span class="share-label">$ share --via</span>
+          <a href="https://twitter.com/intent/tweet?text=Visualizing%20Sentence%20Similarity%20in%203D&url=https%3A%2F%2Farnav.dev%2Fposts%2Fvisualizing-sentence-similarity.html" target="_blank" rel="noopener" class="share-btn">Twitter/X</a>
+          <a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Farnav.dev%2Fposts%2Fvisualizing-sentence-similarity.html&title=Visualizing%20Sentence%20Similarity%20in%203D" target="_blank" rel="noopener" class="share-btn">LinkedIn</a>
+          <button class="share-btn" id="copy-link-btn" data-url="https:&#x2F;&#x2F;arnav.dev&#x2F;posts&#x2F;visualizing-sentence-similarity.html">Copy link</button>
+          <a href="../rss.xml" class="share-btn">RSS</a>
+        </div>
+
+        <!-- Author Card -->
+        <div class="author-card">
+          <div class="author-avatar">AD</div>
+          <div class="author-info">
+            <div class="author-name">Arnav Dasgupta</div>
+            <div class="author-bio">Backend engineer building distributed systems at SAP Labs India. Writes about debugging, scale, and the occasional ML experiment.</div>
+          </div>
+          <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener" class="author-follow">$ follow</a>
+        </div>
+
+        <!-- Next / Prev -->
+        <div class="post-nav">
+          <a href="the-90-percent-seek-mystery.html" class="post-nav-item prev">
+            <div class="post-nav-label">&larr; previous post</div>
+            <div class="post-nav-title">The 90% Seek Mystery: Debugging Apple TV on Budget Android Hardware</div>
+          </a>
+        </div>
+      </div>
+
+    </article>
+
+    <!-- TABLE OF CONTENTS — Sidebar -->
+    <aside class="toc-sidebar">
+      <div class="toc-label">// on this page</div>
+      <ul class="toc-list" id="toc-list">
+        <!-- Generated by JS from headings -->
+      </ul>
+
+      <!-- Reading Progress -->
+      <div class="reading-progress">
+        <div class="progress-label">
+          <span>reading progress</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-exit"><span class="prompt">~$</span> <span style="color:var(--text-muted)">exit 0</span></div>
+      <div class="footer-links">
+        <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/arnavdg98" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://youtube.com/@arnavdasgupta98" target="_blank" rel="noopener">YouTube</a>
+        <a href="mailto:arnavdasgupta98@gmail.com">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/post.js"></script>
+</body>
+</html>

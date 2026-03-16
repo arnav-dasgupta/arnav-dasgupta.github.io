@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab active" href="index.html">
+          <span class="nav-tab-index">0:</span>home
+        </a>
+        <a class="nav-tab" href="about.html">
+          <span class="nav-tab-index">1:</span>about
+        </a>
+        <a class="nav-tab" href="blog/index.html">
+          <span class="nav-tab-index">2:</span>blog
+        </a>
+        <a class="nav-tab" href="projects.html">
+          <span class="nav-tab-index">3:</span>projects
+        </a>
+        <a class="nav-tab" href="contact.html">
+          <span class="nav-tab-index">4:</span>contact
+        </a>
+        <a class="nav-tab" href="resume.html">
+          <span class="nav-tab-index">5:</span>resume
+        </a>
+      </div>
+      <div class="nav-status">utf-8 | LF | <span id="live-clock">--:--</span></div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">bash — arnav@workstation:~</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <div class="terminal-line">
+          <span class="prompt">~$</span> <span class="command">whoami</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output">arnav-dasgupta</span>
+        </div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">
+          <span class="prompt">~$</span> <span class="command">cat /etc/motd</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output-highlight">Software Engineer</span> <span class="output">specialized in</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output">highly scalable</span> <span class="output-blue">distributed systems</span> <span class="output">in the cloud.</span>
+        </div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">
+          <span class="output-dim">Currently building at</span> <span class="output">SAP Labs India</span>
+        </div>
+        <div class="terminal-line">
+          <span class="output-dim">Exploring opportunities in</span> <span class="output-highlight">EU region</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">~$</span> <span class="cursor"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="hero-subtitle" id="hero-subtitle">
+      I design resilient, high-throughput backend systems and write about debugging, 
+      distributed architectures, and the craft of building software that doesn't break at 3 AM.
+    </p>
+
+    <div class="hero-cta" id="hero-cta">
+      <a href="blog/index.html" class="btn-primary">
+        <span>$</span> read blog
+      </a>
+      <a href="projects.html" class="btn-secondary">
+        <span>$</span> view projects
+      </a>
+    </div>
+  </section>
+
+  <!-- ENV VARIABLES — Quick Stats -->
+  <section class="section reveal">
+    <div class="section-header">
+      <span class="prompt">~$</span> printenv | grep ENGINEER
+    </div>
+    <div class="env-grid reveal-stagger">
+      <div class="env-card">
+        <div class="env-key">$EXPERIENCE</div>
+        <div class="env-value"><span class="accent">5+</span> years</div>
+        <div class="env-desc">Building production backend systems</div>
+      </div>
+      <div class="env-card">
+        <div class="env-key">$DOMAIN</div>
+        <div class="env-value">Distributed <span class="amber">Systems</span></div>
+        <div class="env-desc">Microservices, event-driven, cloud-native</div>
+      </div>
+      <div class="env-card">
+        <div class="env-key">$STACK</div>
+        <div class="env-value">Java &middot; Node <span class="accent">&middot;</span> K8s</div>
+        <div class="env-desc">Spring Boot, Express, Docker, AWS/GCP</div>
+      </div>
+      <div class="env-card">
+        <div class="env-key">$FOCUS</div>
+        <div class="env-value">Reliability <span class="amber">&amp;</span> Scale</div>
+        <div class="env-desc">Low-latency, high-throughput, zero-downtime</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LATEST POSTS — ls output -->
+  <section class="section reveal">
+    <div class="section-header">
+      <span class="prompt">~$</span> ls -la ~/posts/ --sort=date
+    </div>
+    <table class="posts-table" id="posts-table">
+      <thead>
+        <tr>
+          <th class="col-perms">permissions</th>
+          <th>date</th>
+          <th class="col-size">size</th>
+          <th>filename</th>
+          <th>tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-href="posts/visualizing-sentence-similarity-in-3d.html">
+          <td class="post-permissions col-perms">-rw-r--r--</td>
+          <td class="post-date">Jan 28 2026</td>
+          <td class="post-size col-size">4.2K</td>
+          <td class="post-title">visualizing-sentence-similarity-in-3d.md</td>
+          <td class="post-tags">
+            <span class="tag tag-ml">ml</span>
+            <span class="tag tag-python">python</span>
+          </td>
+        </tr>
+        <tr data-href="posts/the-90-percent-seek-mystery.html">
+          <td class="post-permissions col-perms">-rw-r--r--</td>
+          <td class="post-date">Dec 26 2025</td>
+          <td class="post-size col-size">3.8K</td>
+          <td class="post-title">the-90-percent-seek-mystery.md</td>
+          <td class="post-tags">
+            <span class="tag tag-debug">debugging</span>
+            <span class="tag tag-perf">performance</span>
+          </td>
+        </tr>
+        <tr data-href="#">
+          <td class="post-permissions col-perms">-rw-r--r--</td>
+          <td class="post-date">--- -- ----</td>
+          <td class="post-size col-size">~5K</td>
+          <td class="post-title" style="color: var(--text-dim); font-style: italic;">next-post-coming-soon.md</td>
+          <td class="post-tags">
+            <span class="tag tag-infra">infra</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FEATURED PROJECT -->
+  <section class="section reveal">
+    <div class="section-header">
+      <span class="prompt">~$</span> git log --oneline projects/ -1
+    </div>
+    <div class="project-featured">
+      <div class="project-info">
+        <div class="project-label">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9z"/></svg>
+          pinned repository
+        </div>
+        <div class="project-name">latent-space-sampler</div>
+        <div class="project-desc">
+          An interactive tool that maps the high-dimensional geometry of how language models 
+          "see" text into a 3D space — visualizing the cosine similarity between two sample 
+          sentences in real time.
+        </div>
+        <div class="project-tech">
+          <span class="project-tech-tag">Python</span>
+          <span class="project-tech-tag">Streamlit</span>
+          <span class="project-tech-tag">sentence-transformers</span>
+          <span class="project-tech-tag">PCA</span>
+        </div>
+        <a href="projects.html" class="btn-secondary">
+          <span>$</span> open --live
+        </a>
+      </div>
+      <div class="project-visual">
+        <!-- Abstract 3D scatter visualization -->
+        <div class="scatter-vis">
+          <div class="scatter-dot" style="top:25%;left:30%;background:var(--accent-green);box-shadow:0 0 10px var(--accent-green);"></div>
+          <div class="scatter-dot" style="top:35%;left:45%;background:var(--accent-green);box-shadow:0 0 8px var(--accent-green);opacity:0.7;width:6px;height:6px;"></div>
+          <div class="scatter-dot" style="top:55%;left:65%;background:var(--accent-amber);box-shadow:0 0 10px var(--accent-amber);"></div>
+          <div class="scatter-dot" style="top:60%;left:50%;background:var(--accent-amber);box-shadow:0 0 8px var(--accent-amber);opacity:0.7;width:6px;height:6px;"></div>
+          <div class="scatter-dot" style="top:40%;left:55%;background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue);opacity:0.5;width:5px;height:5px;"></div>
+          <div class="scatter-dot" style="top:70%;left:35%;background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue);opacity:0.5;width:5px;height:5px;"></div>
+          <div class="scatter-dot" style="top:20%;left:70%;background:var(--accent-green);box-shadow:0 0 6px var(--accent-green);opacity:0.4;width:4px;height:4px;"></div>
+          <div class="scatter-dot" style="top:75%;left:55%;background:var(--accent-amber);box-shadow:0 0 6px var(--accent-amber);opacity:0.4;width:4px;height:4px;"></div>
+          <span class="scatter-label" style="top:18%;left:28%;color:var(--accent-green);">sentence_a</span>
+          <span class="scatter-label" style="top:48%;left:63%;color:var(--accent-amber);">sentence_b</span>
+          <span class="scatter-label" style="bottom:12%;right:15%;color:var(--text-dim);">cosine_sim: 0.73</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATUS BAR / CTA -->
+  <section class="section reveal">
+    <div class="status-bar">
+      <div class="status-text">
+        <span class="green">STATUS:</span> Open to backend engineering roles in the <span class="green">EU region</span>
+        <span class="blink">_</span>
+      </div>
+      <a href="contact.html" class="btn-primary">
+        <span>$</span> get-in-touch
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-exit">
+        <span class="prompt">~$</span> <span style="color: var(--text-muted);">exit 0</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/arnavdg98" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://youtube.com/@arnavdasgupta98" target="_blank" rel="noopener">YouTube</a>
+        <a href="mailto:arnavdasgupta98@gmail.com">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

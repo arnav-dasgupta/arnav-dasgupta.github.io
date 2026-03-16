@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111825;
+      --bg-tertiary: #1a1f2e;
+      --bg-elevated: #1e2538;
+      --accent-green: #00e5a0;
+      --accent-green-dim: #00e5a033;
+      --accent-green-mid: #00e5a066;
+      --accent-amber: #f7b731;
+      --accent-amber-dim: #f7b73133;
+      --accent-blue: #5eafff;
+      --accent-red: #ff6b6b;
+      --accent-purple: #a78bfa;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a0a8b7;
+      --text-muted: #5a6375;
+      --text-dim: #3d4556;
+      --border-color: #1e2a3a;
+      --border-bright: #2a3a4e;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--accent-green-dim) var(--bg-primary); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-green-dim); border-radius: 3px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.015) 2px,rgba(0,0,0,0.015) 4px);
+      pointer-events: none; z-index: 9998;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 2rem; height: 48px;
+    }
+    .nav-session { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+    .nav-session-indicator { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 6px var(--accent-green); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+    .nav-tabs { display: flex; list-style: none; font-family: var(--font-mono); font-size: 0.75rem; }
+    .nav-tab { padding: 0.75rem 1.25rem; color: var(--text-muted); text-decoration: none; border-right: 1px solid var(--border-color); transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; position: relative; }
+    .nav-tab:first-child { border-left: 1px solid var(--border-color); }
+    .nav-tab:hover { color: var(--text-secondary); background: var(--bg-tertiary); }
+    .nav-tab.active { color: var(--accent-green); background: var(--bg-primary); }
+    .nav-tab.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:var(--bg-primary); }
+    .nav-tab-index { color: var(--text-dim); }
+    .nav-status { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); }
+    .prompt { color: var(--accent-green); }
+
+    /* ============================================
+       PAGE CONTENT
+       ============================================ */
+    .page-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+    }
+
+    .page-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .page-command {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .page-title {
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-desc {
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    /* ============================================
+       SEARCH & FILTER BAR
+       ============================================ */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar:focus-within {
+      border-color: var(--accent-green-mid);
+      box-shadow: 0 0 0 3px var(--accent-green-dim);
+    }
+
+    .search-prompt {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      padding: 0.85rem 0 0.85rem 1.25rem;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      padding: 0.85rem 1rem;
+      flex: 1;
+      caret-color: var(--accent-green);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .search-hint {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .search-hint kbd {
+      background: var(--bg-tertiary);
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
+      font-size: 0.65rem;
+    }
+
+    /* ============================================
+       TAG FILTERS — CLI Flags
+       ============================================ */
+    .tag-filters {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-right: 0.25rem;
+    }
+
+    .tag-filter {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .tag-filter:hover {
+      border-color: var(--border-bright);
+      color: var(--text-secondary);
+    }
+
+    .tag-filter.active {
+      background: var(--accent-green-dim);
+      border-color: var(--accent-green-dim);
+      color: var(--accent-green);
+    }
+
+    .tag-filter-all {
+      border-color: var(--accent-green-dim);
+      color: var(--accent-green);
+    }
+
+    /* ============================================
+       RESULTS HEADER
+       ============================================ */
+    .results-header {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .results-count { color: var(--text-muted); }
+    .results-count span { color: var(--accent-green); }
+
+    .results-sort {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .sort-option {
+      color: var(--text-dim);
+      cursor: pointer;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      transition: color 0.2s;
+    }
+
+    .sort-option:hover { color: var(--text-muted); }
+    .sort-option.active { color: var(--accent-green); }
+
+    /* ============================================
+       POST CARDS
+       ============================================ */
+    .post-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .post-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1.5rem;
+      align-items: start;
+      padding: 1.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .post-card:first-child {
+      padding-top: 0;
+    }
+
+    .post-card:hover {
+      padding-left: 1rem;
+      background: linear-gradient(90deg, var(--bg-secondary) 0%, transparent 100%);
+    }
+
+    .post-card:hover .post-card-title {
+      color: var(--accent-green);
+    }
+
+    .post-card:hover .post-card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Left: Date block */
+    .post-card-date {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      width: 90px;
+      text-align: right;
+      padding-top: 0.15rem;
+      flex-shrink: 0;
+    }
+
+    .post-card-date .month {
+      color: var(--text-muted);
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .post-card-date .day {
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .post-card-date .year {
+      color: var(--text-dim);
+      font-size: 0.65rem;
+    }
+
+    /* Middle: Content */
+    .post-card-content {
+      min-width: 0;
+    }
+
+    .post-card-title {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      transition: color 0.15s;
+      line-height: 1.4;
+    }
+
+    .post-card-excerpt {
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 0.75rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .post-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .post-card-tags {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .post-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .post-tag-ml { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed33; }
+    .post-tag-nlp { background: #6366f122; color: #818cf8; border: 1px solid #6366f133; }
+    .post-tag-python { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f633; }
+    .post-tag-viz { background: #14b8a622; color: #2dd4bf; border: 1px solid #14b8a633; }
+    .post-tag-debug { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b33; }
+    .post-tag-android { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e33; }
+    .post-tag-perf { background: #ef444422; color: #f87171; border: 1px solid #ef444433; }
+    .post-tag-sde { background: #06b6d422; color: #22d3ee; border: 1px solid #06b6d433; }
+    .post-tag-infra { background: #00e5a022; color: #00e5a0; border: 1px solid #00e5a033; }
+    .post-tag-java { background: #f9731622; color: #fb923c; border: 1px solid #f9731633; }
+    .post-tag-k8s { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f633; }
+
+    .post-card-reading {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    /* Right: Arrow */
+    .post-card-arrow {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--accent-green);
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: all 0.2s;
+      padding-top: 0.15rem;
+    }
+
+    /* ============================================
+       FILE LISTING VIEW (alternative view)
+       ============================================ */
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .view-btn {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .view-btn:hover { border-color: var(--border-bright); color: var(--text-muted); }
+    .view-btn.active { border-color: var(--accent-green-dim); color: var(--accent-green); background: var(--accent-green-dim); }
+
+    /* ============================================
+       LS -LA TABLE VIEW
+       ============================================ */
+    .ls-view {
+      margin-top: 2rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .ls-header {
+      padding: 0.75rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ls-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .ls-table tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.1s;
+      cursor: pointer;
+    }
+
+    .ls-table tr:last-child { border-bottom: none; }
+
+    .ls-table tr:hover { background: var(--bg-tertiary); }
+    .ls-table tr:hover .ls-filename { color: var(--accent-green); }
+
+    .ls-table td {
+      padding: 0.65rem 1rem;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .ls-perms { color: var(--text-dim); font-size: 0.72rem; }
+    .ls-owner { color: var(--text-muted); }
+    .ls-size { color: var(--text-muted); text-align: right; }
+    .ls-date { color: var(--text-dim); }
+    .ls-filename { color: var(--text-primary); font-weight: 500; transition: color 0.15s; }
+    .ls-ext { color: var(--accent-amber); opacity: 0.7; }
+
+    /* ============================================
+       PAGINATION
+       ============================================ */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 3rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .page-num {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .page-num:hover {
+      border-color: var(--border-bright);
+      color: var(--text-secondary);
+    }
+
+    .page-num.active {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      color: var(--bg-primary);
+      font-weight: 600;
+    }
+
+    .page-nav {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 0.5rem;
+      transition: color 0.15s;
+    }
+
+    .page-nav:hover { color: var(--accent-green); }
+
+    /* ============================================
+       SUBSCRIBE / NEWSLETTER CTA
+       ============================================ */
+    .subscribe-bar {
+      margin-top: 3rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .subscribe-text h3 {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .subscribe-text p {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .subscribe-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .subscribe-input {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.6rem 1rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-primary);
+      outline: none;
+      width: 240px;
+      caret-color: var(--accent-green);
+    }
+
+    .subscribe-input:focus { border-color: var(--accent-green-mid); }
+    .subscribe-input::placeholder { color: var(--text-dim); }
+
+    .subscribe-btn {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.6rem 1.25rem;
+      background: var(--accent-green);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .subscribe-btn:hover { box-shadow: 0 0 16px var(--accent-green-dim); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      max-width: 960px;
+      margin: 4rem auto 0;
+    }
+    .footer-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent-green); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .nav-status { display: none; }
+      .nav-tab { padding: 0.75rem 0.75rem; font-size: 0.65rem; }
+      .page-wrap { padding: 5rem 1rem 3rem; }
+      .post-card { grid-template-columns: 1fr; gap: 0.75rem; }
+      .post-card-date { text-align: left; width: auto; display: flex; gap: 0.5rem; align-items: baseline; }
+      .post-card-date .day { font-size: 1rem; }
+      .post-card-arrow { display: none; }
+      .ls-perms, .ls-owner { display: none; }
+      .subscribe-bar { flex-direction: column; }
+      .subscribe-form { width: 100%; }
+      .subscribe-input { flex: 1; width: auto; }
+      .results-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab" href="#"><span class="nav-tab-index">0:</span>home</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">1:</span>about</a>
+        <a class="nav-tab active" href="#"><span class="nav-tab-index">2:</span>blog</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">3:</span>projects</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">4:</span>contact</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">5:</span>resume</a>
+      </div>
+      <div class="nav-status">utf-8 | LF | 09:42</div>
+    </div>
+  </nav>
+
+  <!-- PAGE -->
+  <div class="page-wrap">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div class="page-command">
+        <span class="prompt">~$</span> ls ~/posts/ -la --sort=date
+      </div>
+      <h1 class="page-title">Blog</h1>
+      <p class="page-desc">
+        System post-mortems, engineering notes, and the occasional deep-dive 
+        into things that probably shouldn't have broken.
+      </p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="search-bar">
+      <span class="search-prompt">~/posts$</span>
+      <input type="text" class="search-input" placeholder="grep -i 'search posts...'">
+      <span class="search-hint"><kbd>/</kbd> to focus</span>
+    </div>
+
+    <!-- TAG FILTERS -->
+    <div class="tag-filters">
+      <span class="tag-label">--tag=</span>
+      <a href="#" class="tag-filter tag-filter-all active">all</a>
+      <a href="#" class="tag-filter">ml</a>
+      <a href="#" class="tag-filter">debugging</a>
+      <a href="#" class="tag-filter">python</a>
+      <a href="#" class="tag-filter">performance</a>
+      <a href="#" class="tag-filter">visualization</a>
+      <a href="#" class="tag-filter">android-tv</a>
+      <a href="#" class="tag-filter">nlp</a>
+      <a href="#" class="tag-filter">sde</a>
+    </div>
+
+    <!-- RESULTS HEADER -->
+    <div class="results-header">
+      <div class="results-count">
+        found <span>5</span> posts matching query
+      </div>
+      <div class="results-sort">
+        <span style="color:var(--text-dim)">sort:</span>
+        <a href="#" class="sort-option active">--date</a>
+        <a href="#" class="sort-option">--title</a>
+        <div class="view-toggle" style="margin-left: 0.5rem;">
+          <button class="view-btn active" title="Card view">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 012.5 1h3A1.5 1.5 0 017 2.5v3A1.5 1.5 0 015.5 7h-3A1.5 1.5 0 011 5.5v-3zM2.5 2a.5.5 0 00-.5.5v3a.5.5 0 00.5.5h3a.5.5 0 00.5-.5v-3a.5.5 0 00-.5-.5h-3zm6.5.5A1.5 1.5 0 0110.5 1h3A1.5 1.5 0 0115 2.5v3A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5v-3zm1.5-.5a.5.5 0 00-.5.5v3a.5.5 0 00.5.5h3a.5.5 0 00.5-.5v-3a.5.5 0 00-.5-.5h-3zM1 10.5A1.5 1.5 0 012.5 9h3A1.5 1.5 0 017 10.5v3A1.5 1.5 0 015.5 15h-3A1.5 1.5 0 011 13.5v-3zm1.5-.5a.5.5 0 00-.5.5v3a.5.5 0 00.5.5h3a.5.5 0 00.5-.5v-3a.5.5 0 00-.5-.5h-3zm6.5.5A1.5 1.5 0 0110.5 9h3a1.5 1.5 0 011.5 1.5v3a1.5 1.5 0 01-1.5 1.5h-3A1.5 1.5 0 019 13.5v-3zm1.5-.5a.5.5 0 00-.5.5v3a.5.5 0 00.5.5h3a.5.5 0 00.5-.5v-3a.5.5 0 00-.5-.5h-3z"/></svg>
+          </button>
+          <button class="view-btn" title="List view">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST CARDS — Default View -->
+    <div class="post-list">
+
+      <!-- Post 1 -->
+      <a class="post-card" href="#">
+        <div class="post-card-date">
+          <span class="month">Jan</span>
+          <span class="day">28</span>
+          <span class="year">2026</span>
+        </div>
+        <div class="post-card-content">
+          <div class="post-card-title">Visualizing Sentence Similarity in 3D</div>
+          <div class="post-card-excerpt">
+            A deep-dive into building a tool that maps 768-dimensional sentence embeddings 
+            into an interactive 3D space, using PCA and an anchor trick to make the 
+            visualization actually interpretable.
+          </div>
+          <div class="post-card-meta">
+            <div class="post-card-tags">
+              <span class="post-tag post-tag-ml">ml</span>
+              <span class="post-tag post-tag-nlp">nlp</span>
+              <span class="post-tag post-tag-python">python</span>
+              <span class="post-tag post-tag-viz">visualization</span>
+            </div>
+            <span class="post-card-reading">~ 8 min read</span>
+          </div>
+        </div>
+        <div class="post-card-arrow">&rarr;</div>
+      </a>
+
+      <!-- Post 2 -->
+      <a class="post-card" href="#">
+        <div class="post-card-date">
+          <span class="month">Dec</span>
+          <span class="day">26</span>
+          <span class="year">2025</span>
+        </div>
+        <div class="post-card-content">
+          <div class="post-card-title">The 90% Seek Mystery: Debugging Apple TV on Budget Android Hardware</div>
+          <div class="post-card-excerpt">
+            A cold-start video always fails on a budget Acer Android TV, but resuming from 
+            ~90% works perfectly. Investigating the Bootstrap Deadlock hypothesis on 
+            resource-constrained hardware.
+          </div>
+          <div class="post-card-meta">
+            <div class="post-card-tags">
+              <span class="post-tag post-tag-debug">debugging</span>
+              <span class="post-tag post-tag-android">android-tv</span>
+              <span class="post-tag post-tag-sde">sde</span>
+              <span class="post-tag post-tag-perf">performance</span>
+            </div>
+            <span class="post-card-reading">~ 6 min read</span>
+          </div>
+        </div>
+        <div class="post-card-arrow">&rarr;</div>
+      </a>
+
+      <!-- Post 3 (placeholder) -->
+      <a class="post-card" href="#">
+        <div class="post-card-date">
+          <span class="month">Nov</span>
+          <span class="day">14</span>
+          <span class="year">2025</span>
+        </div>
+        <div class="post-card-content">
+          <div class="post-card-title">Building a RAG Pipeline That Actually Works</div>
+          <div class="post-card-excerpt">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+            Sed viverra lectus nec risus faucibus, at consequat lorem eleifend.
+            Pellentesque habitant morbi tristique senectus et netus.
+          </div>
+          <div class="post-card-meta">
+            <div class="post-card-tags">
+              <span class="post-tag post-tag-ml">ml</span>
+              <span class="post-tag post-tag-python">python</span>
+              <span class="post-tag post-tag-infra">infra</span>
+            </div>
+            <span class="post-card-reading">~ 12 min read</span>
+          </div>
+        </div>
+        <div class="post-card-arrow">&rarr;</div>
+      </a>
+
+      <!-- Post 4 (placeholder) -->
+      <a class="post-card" href="#">
+        <div class="post-card-date">
+          <span class="month">Oct</span>
+          <span class="day">02</span>
+          <span class="year">2025</span>
+        </div>
+        <div class="post-card-content">
+          <div class="post-card-title">HTTP/2 Migration: The 45% Throughput Win We Didn't Expect</div>
+          <div class="post-card-excerpt">
+            Praesent commodo cursus magna, vel scelerisque nisl consectetur et. 
+            Donec sed odio dui. Maecenas faucibus mollis interdum nulla facilisi.
+          </div>
+          <div class="post-card-meta">
+            <div class="post-card-tags">
+              <span class="post-tag post-tag-perf">performance</span>
+              <span class="post-tag post-tag-java">java</span>
+              <span class="post-tag post-tag-infra">infra</span>
+            </div>
+            <span class="post-card-reading">~ 10 min read</span>
+          </div>
+        </div>
+        <div class="post-card-arrow">&rarr;</div>
+      </a>
+
+      <!-- Post 5 (placeholder) -->
+      <a class="post-card" href="#">
+        <div class="post-card-date">
+          <span class="month">Sep</span>
+          <span class="day">18</span>
+          <span class="year">2025</span>
+        </div>
+        <div class="post-card-content">
+          <div class="post-card-title">Kafka Event Schemas: From 2-Day Onboarding to Instant</div>
+          <div class="post-card-excerpt">
+            Curabitur blandit tempus porttitor. Integer posuere erat a ante 
+            venenatis dapibus posuere velit aliquet. Fusce dapibus tellus.
+          </div>
+          <div class="post-card-meta">
+            <div class="post-card-tags">
+              <span class="post-tag post-tag-java">java</span>
+              <span class="post-tag post-tag-k8s">kafka</span>
+              <span class="post-tag post-tag-infra">infra</span>
+            </div>
+            <span class="post-card-reading">~ 7 min read</span>
+          </div>
+        </div>
+        <div class="post-card-arrow">&rarr;</div>
+      </a>
+
+    </div>
+
+    <!-- LS -LA TABLE VIEW (alternative view shown below) -->
+    <div class="ls-view">
+      <div class="ls-header">
+        <span class="prompt">$</span> ls -la ~/posts/
+      </div>
+      <table class="ls-table">
+        <tr>
+          <td class="ls-perms">-rw-r--r--</td>
+          <td class="ls-owner">arnav</td>
+          <td class="ls-size">4.2K</td>
+          <td class="ls-date">Jan 28 09:14</td>
+          <td class="ls-filename">visualizing-sentence-similarity-in-3d<span class="ls-ext">.md</span></td>
+        </tr>
+        <tr>
+          <td class="ls-perms">-rw-r--r--</td>
+          <td class="ls-owner">arnav</td>
+          <td class="ls-size">3.8K</td>
+          <td class="ls-date">Dec 26 17:32</td>
+          <td class="ls-filename">the-90-percent-seek-mystery<span class="ls-ext">.md</span></td>
+        </tr>
+        <tr>
+          <td class="ls-perms">-rw-r--r--</td>
+          <td class="ls-owner">arnav</td>
+          <td class="ls-size">6.1K</td>
+          <td class="ls-date">Nov 14 11:08</td>
+          <td class="ls-filename">building-a-rag-pipeline<span class="ls-ext">.md</span></td>
+        </tr>
+        <tr>
+          <td class="ls-perms">-rw-r--r--</td>
+          <td class="ls-owner">arnav</td>
+          <td class="ls-size">5.5K</td>
+          <td class="ls-date">Oct 02 14:22</td>
+          <td class="ls-filename">http2-migration-throughput-win<span class="ls-ext">.md</span></td>
+        </tr>
+        <tr>
+          <td class="ls-perms">-rw-r--r--</td>
+          <td class="ls-owner">arnav</td>
+          <td class="ls-size">3.9K</td>
+          <td class="ls-date">Sep 18 20:45</td>
+          <td class="ls-filename">kafka-event-schemas<span class="ls-ext">.md</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <a class="page-nav">&larr; prev</a>
+      <a class="page-num active">1</a>
+      <a class="page-num">2</a>
+      <a class="page-num">3</a>
+      <span style="color:var(--text-dim)">...</span>
+      <a class="page-num">8</a>
+      <a class="page-nav">next &rarr;</a>
+    </div>
+
+    <!-- SUBSCRIBE BAR -->
+    <div class="subscribe-bar">
+      <div class="subscribe-text">
+        <h3>$ subscribe --rss</h3>
+        <p>Get notified when new posts drop. No spam, just engineering content.</p>
+      </div>
+      <div class="subscribe-form">
+        <input type="email" class="subscribe-input" placeholder="you@email.com">
+        <button class="subscribe-btn">$ send</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div><span class="prompt">~$</span> <span style="color:var(--text-muted)">exit 0</span></div>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">YouTube</a>
+        <a href="#">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+</body>
+</html>

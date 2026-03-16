@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/about.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab" href="index.html"><span class="nav-tab-index">0:</span>home</a>
+        <a class="nav-tab active" href="about.html"><span class="nav-tab-index">1:</span>about</a>
+        <a class="nav-tab" href="blog/index.html"><span class="nav-tab-index">2:</span>blog</a>
+        <a class="nav-tab" href="projects.html"><span class="nav-tab-index">3:</span>projects</a>
+        <a class="nav-tab" href="contact.html"><span class="nav-tab-index">4:</span>contact</a>
+        <a class="nav-tab" href="resume.html"><span class="nav-tab-index">5:</span>resume</a>
+      </div>
+      <div class="nav-status">utf-8 | LF | <span id="live-clock">--:--</span></div>
+    </div>
+  </nav>
+
+  <!-- PAGE LAYOUT -->
+  <div class="page">
+
+    <!-- LEFT SIDEBAR — System Info Panel -->
+    <aside class="sidebar">
+      <div class="sys-header">// system info</div>
+
+      <div class="avatar-block">
+        <div class="avatar">AD</div>
+        <div class="avatar-name">Arnav Dasgupta</div>
+        <div class="avatar-handle">@arnav-dasgupta</div>
+      </div>
+
+      <div class="sys-section">
+        <div class="sys-section-title">
+          <span class="prompt">#</span> identity
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">role</span>
+          <span class="sys-val">Software Engineer II</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">org</span>
+          <span class="sys-val green">SAP Labs India</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">team</span>
+          <span class="sys-val">Cloud ALM NGDCI</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">location</span>
+          <span class="sys-val">Bangalore, IN</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">uptime</span>
+          <span class="sys-val amber">5+ years</span>
+        </div>
+      </div>
+
+      <div class="sys-section">
+        <div class="sys-section-title">
+          <span class="prompt">#</span> status
+        </div>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          Open to EU opportunities
+        </div>
+      </div>
+
+      <div class="sys-section">
+        <div class="sys-section-title">
+          <span class="prompt">#</span> connections
+        </div>
+        <div class="social-links">
+          <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener" class="social-link">
+            <span>gh://</span>arnav-dasgupta
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="https://linkedin.com/in/arnavdg98" target="_blank" rel="noopener" class="social-link">
+            <span>li://</span>arnavdg98
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="https://youtube.com/@arnavdasgupta98" target="_blank" rel="noopener" class="social-link">
+            <span>yt://</span>arnavdasgupta98
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="mailto:arnavdasgupta98@gmail.com" class="social-link">
+            <span>mailto:</span>arnav@...
+            <span class="arrow">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header reveal">
+        <div class="page-command">
+          <span class="prompt">~$</span> cat about.md
+        </div>
+        <h1 class="page-title">About</h1>
+        <p class="page-subtitle">
+          A performance-oriented backend engineer building context-based observability 
+          for enterprise cloud platforms.
+        </p>
+      </div>
+
+      <!-- BIO -->
+      <section class="bio-section reveal">
+        <div class="content-header">
+          <span class="prompt">~$</span> cat /proc/bio
+        </div>
+        <div class="bio-text">
+          <p>
+            I'm a <strong>Software Engineer</strong> with over five years of experience designing and 
+            scaling service-oriented architectures for enterprise cloud platforms. My day-to-day involves 
+            building <strong>resilient, high-throughput, low-latency systems</strong> and crafting clean 
+            API contracts that other teams actually enjoy working with.
+          </p>
+          <p>
+            Currently, I'm on the <span class="inline-code">Cloud ALM NGDCI</span> team at SAP Labs India, 
+            where I build cross-product observability tooling. I've shipped everything from 
+            <strong>OpenTelemetry agent libraries</strong> that reduced data loss by 90%, to 
+            <strong>Kafka-based event architectures</strong> that turned two-day tenant onboarding into 
+            a near-instantaneous process.
+          </p>
+          <p>
+            Outside of distributed systems, I've been exploring the intersection of AI and developer tooling — 
+            building RAG systems to make complex documentation conversational, and actively integrating 
+            AI-assisted workflows into my daily engineering practice.
+          </p>
+          <p>
+            When I'm not writing code, I'm probably debugging something else entirely — like why my 
+            Apple TV refuses to play content on budget Android hardware, or how to make a guitar sound 
+            less like a cat in distress.
+          </p>
+        </div>
+      </section>
+
+      <!-- EXPERIENCE — Git Log -->
+      <section class="bio-section reveal">
+        <div class="content-header">
+          <span class="prompt">~$</span> git log --oneline experience/
+        </div>
+        <div class="timeline">
+          <div class="timeline-entry current">
+            <div class="timeline-hash">a3f9c2d</div>
+            <div class="timeline-title">Software Engineer II</div>
+            <div class="timeline-company">SAP Labs India</div>
+            <div class="timeline-date">Aug 2020 — Present</div>
+            <ul class="timeline-details">
+              <li>Built OpenTelemetry agent library — reduced data loss by 90% via multi-threaded queuing and failover</li>
+              <li>Migrated inter-service communication to HTTP/2 — 45% throughput improvement</li>
+              <li>Designed Kafka event schemas with GitHub hooks for automated tenant onboarding</li>
+              <li>Optimized SQL persistence layers with in-memory caching and pagination</li>
+              <li>Built RAG system for complex wiki documentation consumption</li>
+            </ul>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-hash">7e1b4a8</div>
+            <div class="timeline-title">M.Tech in Software Engineering</div>
+            <div class="timeline-company">BITS Pilani</div>
+            <div class="timeline-date">Concurrent with SAP role</div>
+            <ul class="timeline-details">
+              <li>Dissertation: "Efficient Resilience in Distributed Cloud Systems"</li>
+            </ul>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-hash">1d5e3f0</div>
+            <div class="timeline-title">BCA — Computer Applications</div>
+            <div class="timeline-company">MIT World Peace University, Pune</div>
+            <div class="timeline-date">Graduated — GPA: 9.6</div>
+            <ul class="timeline-details">
+              <li>Foundation in algorithms, data structures, and systems programming</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILLS — Dependency Tree -->
+      <section class="bio-section reveal">
+        <div class="content-header">
+          <span class="prompt">~$</span> npm ls --depth=1 core-skills
+        </div>
+        <div class="dep-tree">
+          <div class="dep-root">arnav-dasgupta@5.0.0</div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-category"> languages/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> java</span>
+            <span class="dep-version"> @17 (Spring Boot)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> node.js</span>
+            <span class="dep-version"> @20 (Express, NestJS)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> python</span>
+            <span class="dep-version"> @3.11 (FastAPI, Streamlit)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> sql</span>
+            <span class="dep-version"> (PostgreSQL, HANA)</span>
+          </div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-category"> architecture/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> microservices</span>
+            <span class="dep-version"> @distributed</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> event-driven</span>
+            <span class="dep-version"> (Kafka, gRPC)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> api-design</span>
+            <span class="dep-version"> (REST, Protobuf)</span>
+          </div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-category"> infrastructure/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> docker</span>
+            <span class="dep-version"> @latest</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> kubernetes</span>
+            <span class="dep-version"> @1.28</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> cloud</span>
+            <span class="dep-version"> (AWS, GCP, SAP BTP)</span>
+          </div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-category"> practices/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> tdd</span>
+            <span class="dep-version"> @always</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> performance-tuning</span>
+            <span class="dep-version"> @obsessive</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> reliability-engineering</span>
+            <span class="dep-version"> @production</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- EDUCATION -->
+      <section class="bio-section reveal">
+        <div class="content-header">
+          <span class="prompt">~$</span> cat education.sh
+        </div>
+        <div class="edu-grid">
+          <div class="edu-card">
+            <div class="edu-degree">M.Tech Software Engineering</div>
+            <div class="edu-school">BITS Pilani</div>
+            <div class="edu-meta">Concurrent with professional work</div>
+            <div class="edu-highlight">
+              Dissertation: "Efficient Resilience in Distributed Cloud Systems"
+            </div>
+          </div>
+          <div class="edu-card">
+            <div class="edu-degree">BCA — Computer Applications</div>
+            <div class="edu-school">MIT World Peace University</div>
+            <div class="edu-meta">Pune, India &middot; GPA: 9.6</div>
+            <div class="edu-highlight">
+              Foundation in algorithms, data structures, and systems programming.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HOBBIES -->
+      <section class="bio-section reveal">
+        <div class="content-header">
+          <span class="prompt">~$</span> run hobbies.exe
+        </div>
+        <div class="hobbies-card">
+          <div class="hobbies-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div class="hobbies-text">
+            <strong>Guitar.</strong> Picked it up during COVID and it's been a constant focus outside 
+            of engineering. The YouTube channel is a massive WIP with exactly one video — 
+            the Minimal Viable Product of a music career.
+            <br>
+            <a href="https://youtube.com/@arnavdasgupta98" target="_blank" rel="noopener" class="hobbies-link">
+              watch the MVP &rarr;
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="about-footer">
+    <div class="footer-inner">
+      <div class="footer-exit"><span class="prompt">~$</span> <span style="color:var(--text-muted)">exit 0</span></div>
+      <div class="footer-links">
+        <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/arnavdg98" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://youtube.com/@arnavdasgupta98" target="_blank" rel="noopener">YouTube</a>
+        <a href="mailto:arnavdasgupta98@gmail.com">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

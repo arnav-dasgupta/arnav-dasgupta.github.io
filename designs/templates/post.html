@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <link rel="stylesheet" href="../css/post.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab" href="../index.html"><span class="nav-tab-index">0:</span>home</a>
+        <a class="nav-tab" href="../about.html"><span class="nav-tab-index">1:</span>about</a>
+        <a class="nav-tab active" href="../blog/index.html"><span class="nav-tab-index">2:</span>blog</a>
+        <a class="nav-tab" href="../projects.html"><span class="nav-tab-index">3:</span>projects</a>
+        <a class="nav-tab" href="../contact.html"><span class="nav-tab-index">4:</span>contact</a>
+        <a class="nav-tab" href="../resume.html"><span class="nav-tab-index">5:</span>resume</a>
+      </div>
+      <div class="nav-status">utf-8 | LF | <span id="live-clock">--:--</span></div>
+    </div>
+  </nav>
+
+  <!-- ARTICLE LAYOUT -->
+  <div class="article-layout">
+
+    <!-- MAIN ARTICLE -->
+    <article>
+
+      <!-- Back Link -->
+      <a href="../blog/index.html" class="back-link">
+        <span class="arrow">&larr;</span>
+        <span class="prompt">$</span> cd ../posts
+      </a>
+
+      <!-- ARTICLE HEADER -->
+      <header class="article-header">
+        <div class="article-meta-top">
+          <div class="article-tags">
+            {{#tags}}
+            <span class="tag tag-{{.}}">{{.}}</span>
+            {{/tags}}
+          </div>
+        </div>
+
+        <h1 class="article-title">{{title}}</h1>
+
+        {{#description}}
+        <p class="article-subtitle">{{description}}</p>
+        {{/description}}
+
+        <div class="article-meta-bottom">
+          <div class="meta-item">
+            <span class="label">author:</span>
+            <span class="value">arnav-dasgupta</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">date:</span>
+            <span class="value">{{date}}</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">read:</span>
+            <span class="value">~{{readingTime}} min</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">words:</span>
+            <span class="value">{{wordCount}}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ARTICLE BODY -->
+      <div class="article-body">
+        {{{content}}}
+      </div>
+
+      <!-- POST FOOTER -->
+      <div class="post-footer">
+
+        <!-- Share -->
+        <div class="share-bar">
+          <span class="share-label">$ share --via</span>
+          <a href="https://twitter.com/intent/tweet?text={{encodedTitle}}&url={{encodedUrl}}" target="_blank" rel="noopener" class="share-btn">Twitter/X</a>
+          <a href="https://www.linkedin.com/shareArticle?mini=true&url={{encodedUrl}}&title={{encodedTitle}}" target="_blank" rel="noopener" class="share-btn">LinkedIn</a>
+          <button class="share-btn" id="copy-link-btn" data-url="{{url}}">Copy link</button>
+          <a href="../rss.xml" class="share-btn">RSS</a>
+        </div>
+
+        <!-- Author Card -->
+        <div class="author-card">
+          <div class="author-avatar">AD</div>
+          <div class="author-info">
+            <div class="author-name">Arnav Dasgupta</div>
+            <div class="author-bio">Backend engineer building distributed systems at SAP Labs India. Writes about debugging, scale, and the occasional ML experiment.</div>
+          </div>
+          <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener" class="author-follow">$ follow</a>
+        </div>
+
+        <!-- Next / Prev -->
+        {{#navigation}}
+        <div class="post-nav">
+          {{#prev}}
+          <a href="{{url}}" class="post-nav-item prev">
+            <div class="post-nav-label">&larr; previous post</div>
+            <div class="post-nav-title">{{title}}</div>
+          </a>
+          {{/prev}}
+          {{^prev}}
+          <div class="post-nav-item prev" style="visibility:hidden"></div>
+          {{/prev}}
+          {{#next}}
+          <a href="{{url}}" class="post-nav-item next">
+            <div class="post-nav-label">next post &rarr;</div>
+            <div class="post-nav-title">{{title}}</div>
+          </a>
+          {{/next}}
+        </div>
+        {{/navigation}}
+      </div>
+
+    </article>
+
+    <!-- TABLE OF CONTENTS — Sidebar -->
+    <aside class="toc-sidebar">
+      <div class="toc-label">// on this page</div>
+      <ul class="toc-list" id="toc-list">
+        <!-- Generated by JS from headings -->
+      </ul>
+
+      <!-- Reading Progress -->
+      <div class="reading-progress">
+        <div class="progress-label">
+          <span>reading progress</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-exit"><span class="prompt">~$</span> <span style="color:var(--text-muted)">exit 0</span></div>
+      <div class="footer-links">
+        <a href="https://github.com/arnav-dasgupta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/arnavdg98" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://youtube.com/@arnavdasgupta98" target="_blank" rel="noopener">YouTube</a>
+        <a href="mailto:arnavdasgupta98@gmail.com">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/post.js"></script>
+</body>
+</html>

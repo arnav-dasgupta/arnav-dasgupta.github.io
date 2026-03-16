@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN SYSTEM (shared)
+       ============================================ */
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111825;
+      --bg-tertiary: #1a1f2e;
+      --bg-elevated: #1e2538;
+      --accent-green: #00e5a0;
+      --accent-green-dim: #00e5a033;
+      --accent-green-mid: #00e5a066;
+      --accent-amber: #f7b731;
+      --accent-amber-dim: #f7b73133;
+      --accent-blue: #5eafff;
+      --accent-red: #ff6b6b;
+      --accent-purple: #a78bfa;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a0a8b7;
+      --text-muted: #5a6375;
+      --text-dim: #3d4556;
+      --border-color: #1e2a3a;
+      --border-bright: #2a3a4e;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-green-dim) var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-green-dim); border-radius: 3px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.015) 2px,rgba(0,0,0,0.015) 4px);
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* NAV (same as home) */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 48px;
+    }
+
+    .nav-session {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-session-indicator {
+      width: 8px; height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+
+    .nav-tabs {
+      display: flex;
+      list-style: none;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .nav-tab {
+      padding: 0.75rem 1.25rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-right: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-tab:first-child { border-left: 1px solid var(--border-color); }
+    .nav-tab:hover { color: var(--text-secondary); background: var(--bg-tertiary); }
+    .nav-tab.active { color: var(--accent-green); background: var(--bg-primary); }
+    .nav-tab.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:var(--bg-primary); }
+    .nav-tab { position: relative; }
+    .nav-tab-index { color: var(--text-dim); }
+    .nav-status { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); }
+
+    /* ============================================
+       PAGE LAYOUT — Split Pane
+       ============================================ */
+    .page {
+      padding-top: 48px;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+    }
+
+    /* ============================================
+       LEFT SIDEBAR — System Info Panel
+       ============================================ */
+    .sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 2.5rem 2rem;
+      position: sticky;
+      top: 48px;
+      height: calc(100vh - 48px);
+      overflow-y: auto;
+    }
+
+    .sys-header {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .avatar-block {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      color: var(--accent-green);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+      background-size: 10px 10px;
+      opacity: 0.2;
+    }
+
+    .avatar-name {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .avatar-handle {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .sys-section {
+      margin-bottom: 2rem;
+    }
+
+    .sys-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent-green);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .sys-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    .sys-key { color: var(--text-muted); }
+    .sys-val { color: var(--text-primary); text-align: right; }
+    .sys-val.green { color: var(--accent-green); }
+    .sys-val.amber { color: var(--accent-amber); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 4px;
+      background: var(--accent-green-dim);
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green-dim);
+      margin-top: 0.5rem;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .social-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .social-link {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: 3px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .social-link:hover {
+      background: var(--bg-tertiary);
+      color: var(--accent-green);
+    }
+
+    .social-link .arrow { 
+      margin-left: auto; 
+      color: var(--text-dim); 
+      transition: all 0.2s; 
+    }
+
+    .social-link:hover .arrow { 
+      color: var(--accent-green); 
+      transform: translateX(2px); 
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main {
+      padding: 3rem 4rem;
+      max-width: 860px;
+    }
+
+    .page-header {
+      margin-bottom: 3rem;
+    }
+
+    .page-command {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .page-command .prompt { color: var(--accent-green); }
+
+    .page-title {
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      font-family: var(--font-sans);
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* BIO Section */
+    .bio-section {
+      margin-bottom: 3.5rem;
+    }
+
+    .content-header {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .content-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border-color), transparent);
+    }
+
+    .content-header .prompt { color: var(--accent-green); }
+
+    .bio-text {
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.85;
+      max-width: 680px;
+    }
+
+    .bio-text p { margin-bottom: 1.25rem; }
+
+    .bio-text strong { color: var(--text-primary); font-weight: 500; }
+
+    .bio-text .inline-code {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: var(--bg-tertiary);
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      color: var(--accent-green);
+    }
+
+    /* ============================================
+       EXPERIENCE — Git Log Timeline
+       ============================================ */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent-green), var(--border-color));
+    }
+
+    .timeline-entry {
+      position: relative;
+      margin-bottom: 2.5rem;
+      padding-left: 1.5rem;
+    }
+
+    .timeline-entry::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.5rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-primary);
+      border: 2px solid var(--accent-green);
+      z-index: 1;
+    }
+
+    .timeline-entry.current::before {
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green-dim);
+    }
+
+    .timeline-hash {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent-amber);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-title {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.15rem;
+    }
+
+    .timeline-company {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-date {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+
+    .timeline-details {
+      list-style: none;
+    }
+
+    .timeline-details li {
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      padding: 0.35rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .timeline-details li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    /* ============================================
+       SKILLS — Dependency Tree
+       ============================================ */
+    .dep-tree {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 2;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.75rem 2rem;
+    }
+
+    .dep-root {
+      color: var(--text-primary);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .dep-branch {
+      color: var(--text-dim);
+      display: inline;
+    }
+
+    .dep-name {
+      color: var(--text-secondary);
+    }
+
+    .dep-version {
+      color: var(--accent-green);
+    }
+
+    .dep-category {
+      color: var(--accent-amber);
+      font-weight: 500;
+    }
+
+    .dep-line {
+      padding-left: 0;
+    }
+
+    .dep-line.l1 { padding-left: 1.5rem; }
+    .dep-line.l2 { padding-left: 3rem; }
+
+    /* ============================================
+       EDUCATION
+       ============================================ */
+    .edu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .edu-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.5rem;
+      transition: all 0.2s;
+    }
+
+    .edu-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-1px);
+    }
+
+    .edu-degree {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .edu-school {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      margin-bottom: 0.5rem;
+    }
+
+    .edu-meta {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .edu-highlight {
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       HOBBIES — Break from terminal
+       ============================================ */
+    .hobbies-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 2rem;
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    .hobbies-icon {
+      font-size: 2.5rem;
+      flex-shrink: 0;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .hobbies-text {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .hobbies-text strong {
+      color: var(--text-primary);
+    }
+
+    .hobbies-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-green);
+      text-decoration: none;
+      margin-top: 0.5rem;
+      transition: gap 0.2s;
+    }
+
+    .hobbies-link:hover { gap: 0.7rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 4rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent-green); }
+    .prompt { color: var(--accent-green); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .sidebar {
+        position: relative;
+        top: 0;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .main { padding: 2rem 1.5rem; }
+      .edu-grid { grid-template-columns: 1fr; }
+      .hobbies-card { flex-direction: column; }
+      footer { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab" href="#"><span class="nav-tab-index">0:</span>home</a>
+        <a class="nav-tab active" href="#"><span class="nav-tab-index">1:</span>about</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">2:</span>blog</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">3:</span>projects</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">4:</span>contact</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">5:</span>resume</a>
+      </div>
+      <div class="nav-status">utf-8 | LF | 09:42</div>
+    </div>
+  </nav>
+
+  <!-- PAGE LAYOUT -->
+  <div class="page">
+
+    <!-- LEFT SIDEBAR — System Info Panel -->
+    <aside class="sidebar">
+      <div class="sys-header">// system info</div>
+
+      <div class="avatar-block">
+        <div class="avatar">AD</div>
+        <div class="avatar-name">Arnav Dasgupta</div>
+        <div class="avatar-handle">@arnav-dasgupta</div>
+      </div>
+
+      <div class="sys-section">
+        <div class="sys-section-title">
+          <span class="prompt">#</span> identity
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">role</span>
+          <span class="sys-val">Software Engineer II</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">org</span>
+          <span class="sys-val green">SAP Labs India</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">team</span>
+          <span class="sys-val">Cloud ALM NGDCI</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">location</span>
+          <span class="sys-val">Bangalore, IN</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-key">uptime</span>
+          <span class="sys-val amber">5+ years</span>
+        </div>
+      </div>
+
+      <div class="sys-section">
+        <div class="sys-section-title">
+          <span class="prompt">#</span> status
+        </div>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          Open to EU opportunities
+        </div>
+      </div>
+
+      <div class="sys-section">
+        <div class="sys-section-title">
+          <span class="prompt">#</span> connections
+        </div>
+        <div class="social-links">
+          <a href="#" class="social-link">
+            <span>gh://</span>arnav-dasgupta
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="#" class="social-link">
+            <span>li://</span>arnavdg98
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="#" class="social-link">
+            <span>yt://</span>arnavdasgupta98
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="#" class="social-link">
+            <span>mailto:</span>arnav@...
+            <span class="arrow">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="page-command">
+          <span class="prompt">~$</span> cat about.md
+        </div>
+        <h1 class="page-title">About</h1>
+        <p class="page-subtitle">
+          A performance-oriented backend engineer building context-based observability 
+          for enterprise cloud platforms.
+        </p>
+      </div>
+
+      <!-- BIO -->
+      <section class="bio-section">
+        <div class="content-header">
+          <span class="prompt">~$</span> cat /proc/bio
+        </div>
+        <div class="bio-text">
+          <p>
+            I'm a <strong>Software Engineer</strong> with over five years of experience designing and 
+            scaling service-oriented architectures for enterprise cloud platforms. My day-to-day involves 
+            building <strong>resilient, high-throughput, low-latency systems</strong> and crafting clean 
+            API contracts that other teams actually enjoy working with.
+          </p>
+          <p>
+            Currently, I'm on the <span class="inline-code">Cloud ALM NGDCI</span> team at SAP Labs India, 
+            where I build cross-product observability tooling. I've shipped everything from 
+            <strong>OpenTelemetry agent libraries</strong> that reduced data loss by 90%, to 
+            <strong>Kafka-based event architectures</strong> that turned two-day tenant onboarding into 
+            a near-instantaneous process.
+          </p>
+          <p>
+            Outside of distributed systems, I've been exploring the intersection of AI and developer tooling — 
+            building RAG systems to make complex documentation conversational, and actively integrating 
+            AI-assisted workflows into my daily engineering practice.
+          </p>
+          <p>
+            When I'm not writing code, I'm probably debugging something else entirely — like why my 
+            Apple TV refuses to play content on budget Android hardware, or how to make a guitar sound 
+            less like a cat in distress.
+          </p>
+        </div>
+      </section>
+
+      <!-- EXPERIENCE — Git Log -->
+      <section class="bio-section">
+        <div class="content-header">
+          <span class="prompt">~$</span> git log --oneline experience/
+        </div>
+        <div class="timeline">
+          <div class="timeline-entry current">
+            <div class="timeline-hash">a3f9c2d</div>
+            <div class="timeline-title">Software Engineer II</div>
+            <div class="timeline-company">SAP Labs India</div>
+            <div class="timeline-date">Aug 2020 — Present</div>
+            <ul class="timeline-details">
+              <li>Built OpenTelemetry agent library — reduced data loss by 90% via multi-threaded queuing and failover</li>
+              <li>Migrated inter-service communication to HTTP/2 — 45% throughput improvement</li>
+              <li>Designed Kafka event schemas with GitHub hooks for automated tenant onboarding</li>
+              <li>Optimized SQL persistence layers with in-memory caching and pagination</li>
+              <li>Built RAG system for complex wiki documentation consumption</li>
+            </ul>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-hash">7e1b4a8</div>
+            <div class="timeline-title">M.Tech in Software Engineering</div>
+            <div class="timeline-company">BITS Pilani</div>
+            <div class="timeline-date">Concurrent with SAP role</div>
+            <ul class="timeline-details">
+              <li>Dissertation: "Efficient Resilience in Distributed Cloud Systems"</li>
+            </ul>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-hash">1d5e3f0</div>
+            <div class="timeline-title">BCA — Computer Applications</div>
+            <div class="timeline-company">MIT World Peace University, Pune</div>
+            <div class="timeline-date">Graduated — GPA: 9.6</div>
+            <ul class="timeline-details">
+              <li>Foundation in algorithms, data structures, and systems programming</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILLS — Dependency Tree -->
+      <section class="bio-section">
+        <div class="content-header">
+          <span class="prompt">~$</span> npm ls --depth=1 core-skills
+        </div>
+        <div class="dep-tree">
+          <div class="dep-root">arnav-dasgupta@5.0.0</div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-category"> languages/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> java</span>
+            <span class="dep-version"> @17 (Spring Boot)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> node.js</span>
+            <span class="dep-version"> @20 (Express, NestJS)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> python</span>
+            <span class="dep-version"> @3.11 (FastAPI, Streamlit)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> sql</span>
+            <span class="dep-version"> (PostgreSQL, HANA)</span>
+          </div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-category"> architecture/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> microservices</span>
+            <span class="dep-version"> @distributed</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> event-driven</span>
+            <span class="dep-version"> (Kafka, gRPC)</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> api-design</span>
+            <span class="dep-version"> (REST, Protobuf)</span>
+          </div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-category"> infrastructure/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> docker</span>
+            <span class="dep-version"> @latest</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> kubernetes</span>
+            <span class="dep-version"> @1.28</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> cloud</span>
+            <span class="dep-version"> (AWS, GCP, SAP BTP)</span>
+          </div>
+          <div class="dep-line l1">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-category"> practices/</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> tdd</span>
+            <span class="dep-version"> @always</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9500;&#9472;&#9472;</span>
+            <span class="dep-name"> performance-tuning</span>
+            <span class="dep-version"> @obsessive</span>
+          </div>
+          <div class="dep-line l2">
+            <span class="dep-branch">&#9492;&#9472;&#9472;</span>
+            <span class="dep-name"> reliability-engineering</span>
+            <span class="dep-version"> @production</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- EDUCATION -->
+      <section class="bio-section">
+        <div class="content-header">
+          <span class="prompt">~$</span> cat education.sh
+        </div>
+        <div class="edu-grid">
+          <div class="edu-card">
+            <div class="edu-degree">M.Tech Software Engineering</div>
+            <div class="edu-school">BITS Pilani</div>
+            <div class="edu-meta">Concurrent with professional work</div>
+            <div class="edu-highlight">
+              Dissertation: "Efficient Resilience in Distributed Cloud Systems"
+            </div>
+          </div>
+          <div class="edu-card">
+            <div class="edu-degree">BCA — Computer Applications</div>
+            <div class="edu-school">MIT World Peace University</div>
+            <div class="edu-meta">Pune, India &middot; GPA: 9.6</div>
+            <div class="edu-highlight">
+              Foundation in algorithms, data structures, and systems programming.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HOBBIES -->
+      <section class="bio-section">
+        <div class="content-header">
+          <span class="prompt">~$</span> run hobbies.exe
+        </div>
+        <div class="hobbies-card">
+          <div class="hobbies-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div class="hobbies-text">
+            <strong>Guitar.</strong> Picked it up during COVID and it's been a constant focus outside 
+            of engineering. The YouTube channel is a massive WIP with exactly one video — 
+            the Minimal Viable Product of a music career.
+            <br>
+            <a href="#" class="hobbies-link">
+              watch the MVP &rarr;
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div><span class="prompt">~$</span> <span style="color:var(--text-muted)">exit 0</span></div>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">YouTube</a>
+        <a href="#">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizing Sentence Similarity in 3D — arnav.log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN SYSTEM (shared)
+       ============================================ */
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111825;
+      --bg-tertiary: #1a1f2e;
+      --bg-elevated: #1e2538;
+      --accent-green: #00e5a0;
+      --accent-green-dim: #00e5a033;
+      --accent-green-mid: #00e5a066;
+      --accent-amber: #f7b731;
+      --accent-amber-dim: #f7b73133;
+      --accent-blue: #5eafff;
+      --accent-red: #ff6b6b;
+      --accent-purple: #a78bfa;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a0a8b7;
+      --text-muted: #5a6375;
+      --text-dim: #3d4556;
+      --border-color: #1e2a3a;
+      --border-bright: #2a3a4e;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--accent-green-dim) var(--bg-primary); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-green-dim); border-radius: 3px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* Noise grain */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* Scanlines */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.015) 2px,rgba(0,0,0,0.015) 4px);
+      pointer-events: none; z-index: 9998;
+    }
+
+    .prompt { color: var(--accent-green); }
+
+    /* ============================================
+       NAV
+       ============================================ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 2rem; height: 48px;
+    }
+    .nav-session { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+    .nav-session-indicator { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 6px var(--accent-green); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+    .nav-tabs { display: flex; list-style: none; font-family: var(--font-mono); font-size: 0.75rem; }
+    .nav-tab { padding: 0.75rem 1.25rem; color: var(--text-muted); text-decoration: none; border-right: 1px solid var(--border-color); transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; position: relative; }
+    .nav-tab:first-child { border-left: 1px solid var(--border-color); }
+    .nav-tab:hover { color: var(--text-secondary); background: var(--bg-tertiary); }
+    .nav-tab.active { color: var(--accent-green); background: var(--bg-primary); }
+    .nav-tab.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:var(--bg-primary); }
+    .nav-tab-index { color: var(--text-dim); }
+    .nav-status { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); }
+
+    /* ============================================
+       ARTICLE LAYOUT — Content + TOC sidebar
+       ============================================ */
+    .article-layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    /* ============================================
+       BACK LINK
+       ============================================ */
+    .back-link {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--accent-green); }
+    .back-link .arrow { transition: transform 0.2s; }
+    .back-link:hover .arrow { transform: translateX(-3px); }
+
+    /* ============================================
+       ARTICLE HEADER
+       ============================================ */
+    .article-header {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .article-meta-top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .article-tags {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .article-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .tag-ml { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed33; }
+    .tag-nlp { background: #6366f122; color: #818cf8; border: 1px solid #6366f133; }
+    .tag-python { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f633; }
+    .tag-viz { background: #14b8a622; color: #2dd4bf; border: 1px solid #14b8a633; }
+
+    .article-title {
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      margin-bottom: 1.25rem;
+    }
+
+    .article-subtitle {
+      font-family: var(--font-sans);
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 680px;
+    }
+
+    .article-meta-bottom {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .meta-item .label { color: var(--text-dim); }
+    .meta-item .value { color: var(--text-muted); }
+    .meta-separator { color: var(--border-color); }
+
+    /* ============================================
+       ARTICLE BODY — Prose Styling
+       ============================================ */
+    .article-body {
+      max-width: 720px;
+    }
+
+    .article-body h2 {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .article-body h2::before {
+      content: '##';
+      color: var(--text-dim);
+      margin-right: 0.6rem;
+      font-weight: 400;
+    }
+
+    .article-body h3 {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .article-body h3::before {
+      content: '###';
+      color: var(--text-dim);
+      margin-right: 0.5rem;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    .article-body p {
+      font-family: var(--font-sans);
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.85;
+      margin-bottom: 1.5rem;
+    }
+
+    .article-body strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .article-body em {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .article-body a {
+      color: var(--accent-green);
+      text-decoration: none;
+      border-bottom: 1px solid var(--accent-green-dim);
+      transition: all 0.2s;
+    }
+
+    .article-body a:hover {
+      border-bottom-color: var(--accent-green);
+    }
+
+    .article-body ul, .article-body ol {
+      margin-bottom: 1.5rem;
+      padding-left: 1.25rem;
+    }
+
+    .article-body li {
+      font-family: var(--font-sans);
+      font-size: 1.02rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 0.4rem;
+    }
+
+    .article-body li::marker {
+      color: var(--accent-green);
+    }
+
+    /* Inline code */
+    .article-body code {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      background: var(--bg-tertiary);
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      color: var(--accent-green);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Code blocks — Terminal window style */
+    .code-block {
+      margin: 1.75rem 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      padding: 0.65rem 1rem;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-color);
+      gap: 0.5rem;
+    }
+
+    .code-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .code-dot.red { background: #ff5f57; }
+    .code-dot.yellow { background: #febc2e; }
+    .code-dot.green { background: #28c840; }
+
+    .code-filename {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+    }
+
+    .code-lang {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-left: auto;
+      padding: 0.15rem 0.5rem;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+    }
+
+    .code-copy {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .code-copy:hover {
+      color: var(--accent-green);
+      border-color: var(--accent-green-dim);
+    }
+
+    .code-body {
+      padding: 1.25rem 0;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.7;
+      counter-reset: line;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0 1.25rem;
+      transition: background 0.1s;
+    }
+
+    .code-line:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .code-line-num {
+      width: 3rem;
+      text-align: right;
+      padding-right: 1.25rem;
+      color: var(--text-dim);
+      user-select: none;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border-color);
+      margin-right: 1.25rem;
+    }
+
+    .code-line-content {
+      white-space: pre;
+    }
+
+    /* Syntax highlighting */
+    .syn-keyword { color: var(--accent-purple); }
+    .syn-string { color: var(--accent-amber); }
+    .syn-comment { color: var(--text-dim); font-style: italic; }
+    .syn-function { color: var(--accent-blue); }
+    .syn-variable { color: var(--text-primary); }
+    .syn-number { color: var(--accent-green); }
+    .syn-operator { color: var(--text-muted); }
+    .syn-class { color: #f7b731; }
+    .syn-param { color: var(--accent-red); }
+    .syn-decorator { color: var(--accent-amber); }
+
+    /* Highlighted lines */
+    .code-line.highlighted {
+      background: var(--accent-green-dim);
+      border-left: 2px solid var(--accent-green);
+    }
+
+    .code-line.highlighted .code-line-num {
+      color: var(--accent-green);
+    }
+
+    /* Blockquotes */
+    .article-body blockquote {
+      border-left: 3px solid var(--accent-amber);
+      padding: 1rem 1.5rem;
+      margin: 1.75rem 0;
+      background: var(--accent-amber-dim);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .article-body blockquote p {
+      color: var(--text-secondary);
+      margin-bottom: 0;
+      font-size: 0.98rem;
+    }
+
+    .article-body blockquote p::before {
+      content: '// ';
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    /* Images / Figures */
+    .article-figure {
+      margin: 2rem 0;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .article-figure-img {
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .article-figure-img::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+      background-size: 25px 25px;
+      opacity: 0.25;
+    }
+
+    .placeholder-label {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      z-index: 1;
+    }
+
+    .article-figure-caption {
+      padding: 0.75rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .article-figure-caption span { color: var(--text-dim); }
+
+    /* Horizontal Rule */
+    .article-body hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 2.5rem 0;
+    }
+
+    /* Info callout */
+    .callout {
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.75rem 0;
+      background: var(--bg-secondary);
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .callout-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .callout-content p {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    .callout-info { border-color: var(--accent-blue); border-left-width: 3px; }
+    .callout-info .callout-icon { color: var(--accent-blue); }
+
+    /* ============================================
+       TABLE OF CONTENTS — Sidebar
+       ============================================ */
+    .toc-sidebar {
+      position: sticky;
+      top: 80px;
+      padding-top: 2rem;
+    }
+
+    .toc-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .toc-item {
+      padding: 0.4rem 0;
+      padding-left: 1rem;
+      border-left: 2px solid var(--border-color);
+      transition: all 0.15s;
+    }
+
+    .toc-item:hover {
+      border-left-color: var(--accent-green-mid);
+    }
+
+    .toc-item.active {
+      border-left-color: var(--accent-green);
+    }
+
+    .toc-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toc-link:hover { color: var(--text-secondary); }
+
+    .toc-item.active .toc-link { color: var(--accent-green); }
+
+    .toc-num {
+      color: var(--text-dim);
+      font-size: 0.65rem;
+      width: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .toc-item.sub {
+      padding-left: 2.25rem;
+    }
+
+    /* Progress bar */
+    .reading-progress {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .progress-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 35%;
+      background: var(--accent-green);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* ============================================
+       POST FOOTER — Author, Share, Next/Prev
+       ============================================ */
+    .post-footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* Share bar */
+    .share-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .share-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .share-btn {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .share-btn:hover {
+      border-color: var(--border-bright);
+      color: var(--text-secondary);
+    }
+
+    /* Author card */
+    .author-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .author-avatar {
+      width: 56px; height: 56px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      color: var(--accent-green);
+      flex-shrink: 0;
+    }
+
+    .author-info { flex: 1; }
+
+    .author-name {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .author-bio {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .author-follow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--accent-green-dim);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--accent-green);
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .author-follow:hover {
+      background: var(--accent-green-dim);
+    }
+
+    /* Next / Prev navigation */
+    .post-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .post-nav-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .post-nav-item:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-1px);
+    }
+
+    .post-nav-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .post-nav-title {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .post-nav-item:hover .post-nav-title {
+      color: var(--accent-green);
+    }
+
+    .post-nav-item.next {
+      text-align: right;
+    }
+
+    .post-nav-item.next .post-nav-label {
+      justify-content: flex-end;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 4rem auto 0;
+    }
+    .footer-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent-green); }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 900px) {
+      .article-layout {
+        grid-template-columns: 1fr;
+        padding: 5rem 1.25rem 3rem;
+        gap: 0;
+      }
+      .toc-sidebar {
+        display: none;
+      }
+      .article-title { font-size: 1.6rem; }
+      .article-meta-bottom { flex-wrap: wrap; gap: 0.75rem; }
+      .post-nav { grid-template-columns: 1fr; }
+      .author-card { flex-direction: column; text-align: center; }
+      footer { padding: 2rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-session">
+        <div class="nav-session-indicator"></div>
+        <span>arnav.log</span>
+      </div>
+      <div class="nav-tabs">
+        <a class="nav-tab" href="#"><span class="nav-tab-index">0:</span>home</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">1:</span>about</a>
+        <a class="nav-tab active" href="#"><span class="nav-tab-index">2:</span>blog</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">3:</span>projects</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">4:</span>contact</a>
+        <a class="nav-tab" href="#"><span class="nav-tab-index">5:</span>resume</a>
+      </div>
+      <div class="nav-status">utf-8 | LF | 09:42</div>
+    </div>
+  </nav>
+
+  <!-- ARTICLE LAYOUT -->
+  <div class="article-layout">
+
+    <!-- MAIN ARTICLE -->
+    <article>
+
+      <!-- Back Link -->
+      <a href="#" class="back-link">
+        <span class="arrow">&larr;</span>
+        <span class="prompt">$</span> cd ../posts
+      </a>
+
+      <!-- ARTICLE HEADER -->
+      <header class="article-header">
+        <div class="article-meta-top">
+          <div class="article-tags">
+            <span class="article-tag tag-ml">ml</span>
+            <span class="article-tag tag-nlp">nlp</span>
+            <span class="article-tag tag-python">python</span>
+            <span class="article-tag tag-viz">visualization</span>
+          </div>
+        </div>
+
+        <h1 class="article-title">Visualizing Sentence Similarity in 3D</h1>
+
+        <p class="article-subtitle">
+          How I built a tool that maps 768-dimensional sentence embeddings 
+          into an interactive 3D scatter plot — and why the naive approach 
+          produces garbage.
+        </p>
+
+        <div class="article-meta-bottom">
+          <div class="meta-item">
+            <span class="label">author:</span>
+            <span class="value">arnav-dasgupta</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">date:</span>
+            <span class="value">2026-01-28</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">read:</span>
+            <span class="value">~8 min</span>
+          </div>
+          <span class="meta-separator">|</span>
+          <div class="meta-item">
+            <span class="label">words:</span>
+            <span class="value">2,140</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ARTICLE BODY -->
+      <div class="article-body">
+
+        <p>
+          Lorem ipsum dolor sit amet, <strong>consectetur adipiscing elit</strong>. Sed viverra 
+          lectus nec risus faucibus, at consequat lorem eleifend. Pellentesque habitant morbi 
+          tristique senectus et netus et malesuada fames ac turpis egestas. When we talk about 
+          <a href="#">sentence embeddings</a>, we're really talking about how a language model 
+          compresses meaning into a fixed-size vector.
+        </p>
+
+        <p>
+          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; 
+          the <code>all-mpnet-base-v2</code> model produces 768-dimensional vectors for each 
+          input sentence. The question becomes: how do you make that interpretable to a human 
+          who can only perceive three spatial dimensions?
+        </p>
+
+        <h2 id="the-problem">The Problem</h2>
+
+        <p>
+          Curabitur blandit tempus porttitor. <strong>Integer posuere erat a ante venenatis 
+          dapibus</strong> posuere velit aliquet. Fusce dapibus, tellus ac cursus commodo, tortor 
+          mauris condimentum nibh, ut fermentum massa justo sit amet risus. Maecenas sed diam eget 
+          risus varius blandit sit amet non magna.
+        </p>
+
+        <blockquote>
+          <p>
+            The naive approach of just running PCA on two vectors produces a meaningless result — 
+            you need reference points to anchor the space.
+          </p>
+        </blockquote>
+
+        <p>
+          Nullam quis risus eget urna mollis ornare vel eu leo. Praesent commodo cursus magna, 
+          vel scelerisque nisl consectetur et. Donec sed odio dui. Etiam porta sem malesuada magna 
+          mollis euismod. Cras justo odio, dapibus ut facilisis in, egestas eget quam.
+        </p>
+
+        <h2 id="embeddings">What Are Sentence Embeddings?</h2>
+
+        <p>
+          Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Sed posuere consectetur est 
+          at lobortis. Cras mattis consectetur purus sit amet fermentum. Nulla vitae elit libero, 
+          a pharetra augue. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis 
+          vestibulum.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 118 1a7 7 0 010 14zm0 1A8 8 0 108 0a8 8 0 000 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+          </div>
+          <div class="callout-content">
+            <p>
+              Sentence-transformers map variable-length text to fixed-size dense vectors. 
+              The <code>all-mpnet-base-v2</code> model used here produces 768-dimensional embeddings 
+              trained on over 1 billion sentence pairs.
+            </p>
+          </div>
+        </div>
+
+        <h2 id="cosine-similarity">Cosine Similarity: Angles, Not Distances</h2>
+
+        <p>
+          Maecenas faucibus mollis interdum. Duis mollis, est non commodo luctus, nisi erat 
+          porttitor ligula, eget lacinia odio sem nec elit. Integer posuere erat a ante venenatis 
+          dapibus posuere velit aliquet. Vivamus sagittis lacus vel augue laoreet rutrum faucibus 
+          dolor auctor.
+        </p>
+
+        <!-- CODE BLOCK -->
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-dot red"></div>
+            <div class="code-dot yellow"></div>
+            <div class="code-dot green"></div>
+            <span class="code-filename">similarity.py</span>
+            <span class="code-lang">python</span>
+            <button class="code-copy">copy</button>
+          </div>
+          <div class="code-body">
+            <div class="code-line">
+              <span class="code-line-num">1</span>
+              <span class="code-line-content"><span class="syn-keyword">import</span> <span class="syn-variable">numpy</span> <span class="syn-keyword">as</span> <span class="syn-variable">np</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">2</span>
+              <span class="code-line-content"><span class="syn-keyword">from</span> <span class="syn-variable">sentence_transformers</span> <span class="syn-keyword">import</span> <span class="syn-class">SentenceTransformer</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">3</span>
+              <span class="code-line-content"></span>
+            </div>
+            <div class="code-line highlighted">
+              <span class="code-line-num">4</span>
+              <span class="code-line-content"><span class="syn-variable">model</span> <span class="syn-operator">=</span> <span class="syn-class">SentenceTransformer</span><span class="syn-operator">(</span><span class="syn-string">'all-mpnet-base-v2'</span><span class="syn-operator">)</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">5</span>
+              <span class="code-line-content"></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">6</span>
+              <span class="code-line-content"><span class="syn-keyword">def</span> <span class="syn-function">cosine_similarity</span><span class="syn-operator">(</span><span class="syn-param">a</span><span class="syn-operator">,</span> <span class="syn-param">b</span><span class="syn-operator">):</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">7</span>
+              <span class="code-line-content">    <span class="syn-comment">"""Compute cosine similarity between two vectors."""</span></span>
+            </div>
+            <div class="code-line highlighted">
+              <span class="code-line-num">8</span>
+              <span class="code-line-content">    <span class="syn-keyword">return</span> <span class="syn-variable">np</span><span class="syn-operator">.</span><span class="syn-function">dot</span><span class="syn-operator">(</span><span class="syn-param">a</span><span class="syn-operator">,</span> <span class="syn-param">b</span><span class="syn-operator">)</span> <span class="syn-operator">/</span> <span class="syn-operator">(</span></span>
+            </div>
+            <div class="code-line highlighted">
+              <span class="code-line-num">9</span>
+              <span class="code-line-content">        <span class="syn-variable">np</span><span class="syn-operator">.</span><span class="syn-function">linalg.norm</span><span class="syn-operator">(</span><span class="syn-param">a</span><span class="syn-operator">)</span> <span class="syn-operator">*</span> <span class="syn-variable">np</span><span class="syn-operator">.</span><span class="syn-function">linalg.norm</span><span class="syn-operator">(</span><span class="syn-param">b</span><span class="syn-operator">)</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">10</span>
+              <span class="code-line-content">    <span class="syn-operator">)</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">11</span>
+              <span class="code-line-content"></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">12</span>
+              <span class="code-line-content"><span class="syn-comment"># Encode sentences</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">13</span>
+              <span class="code-line-content"><span class="syn-variable">sentences</span> <span class="syn-operator">=</span> <span class="syn-operator">[</span><span class="syn-string">"The cat sat on the mat"</span><span class="syn-operator">,</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">14</span>
+              <span class="code-line-content">              <span class="syn-string">"A kitten rested on the rug"</span><span class="syn-operator">]</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">15</span>
+              <span class="code-line-content"><span class="syn-variable">embeddings</span> <span class="syn-operator">=</span> <span class="syn-variable">model</span><span class="syn-operator">.</span><span class="syn-function">encode</span><span class="syn-operator">(</span><span class="syn-variable">sentences</span><span class="syn-operator">)</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">16</span>
+              <span class="code-line-content"><span class="syn-function">print</span><span class="syn-operator">(</span><span class="syn-function">cosine_similarity</span><span class="syn-operator">(</span><span class="syn-variable">embeddings</span><span class="syn-operator">[</span><span class="syn-number">0</span><span class="syn-operator">],</span> <span class="syn-variable">embeddings</span><span class="syn-operator">[</span><span class="syn-number">1</span><span class="syn-operator">]))</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">17</span>
+              <span class="code-line-content"><span class="syn-comment"># Output: 0.7341</span></span>
+            </div>
+          </div>
+        </div>
+
+        <h2 id="pca-reduction">PCA: From 768D to 3D</h2>
+
+        <p>
+          Aenean lacinia bibendum nulla sed consectetur. <strong>Praesent commodo cursus magna</strong>, 
+          vel scelerisque nisl consectetur et. Fusce dapibus, tellus ac cursus commodo, tortor mauris 
+          condimentum nibh. The key insight is that standard PCA on just two points is mathematically 
+          degenerate — you need a set of <em>anchor points</em> to define a meaningful coordinate system.
+        </p>
+
+        <!-- Figure -->
+        <div class="article-figure">
+          <div class="article-figure-img">
+            <span class="placeholder-label">[3D scatter plot visualization]</span>
+          </div>
+          <div class="article-figure-caption">
+            <span>Fig 1.</span> Two sentences projected into 3D space using PCA with 8 semantically diverse anchor sentences. Green cluster = sentence A, amber cluster = sentence B.
+          </div>
+        </div>
+
+        <h3 id="anchor-trick">The Anchor Trick</h3>
+
+        <p>
+          Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis 
+          euismod semper. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur 
+          ridiculus mus. Nullam id dolor id nibh ultricies vehicula ut id elit.
+        </p>
+
+        <ul>
+          <li>Select 6-8 semantically diverse anchor sentences spanning different domains</li>
+          <li>Encode all anchors + your two target sentences together</li>
+          <li>Run PCA on the full set — the anchors define the axes</li>
+          <li>The relative positions of your target sentences now carry meaning</li>
+        </ul>
+
+        <h2 id="implementation">Putting It All Together</h2>
+
+        <p>
+          Etiam porta sem malesuada magna mollis euismod. Donec id elit non mi porta gravida at 
+          eget metus. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis 
+          consectetur purus sit amet fermentum. The entire implementation is about 
+          <code>~130 lines of Python</code>.
+        </p>
+
+        <!-- CODE BLOCK 2 -->
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-dot red"></div>
+            <div class="code-dot yellow"></div>
+            <div class="code-dot green"></div>
+            <span class="code-filename">app.py</span>
+            <span class="code-lang">python</span>
+            <button class="code-copy">copy</button>
+          </div>
+          <div class="code-body">
+            <div class="code-line">
+              <span class="code-line-num">1</span>
+              <span class="code-line-content"><span class="syn-keyword">import</span> <span class="syn-variable">streamlit</span> <span class="syn-keyword">as</span> <span class="syn-variable">st</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">2</span>
+              <span class="code-line-content"><span class="syn-keyword">import</span> <span class="syn-variable">plotly.graph_objects</span> <span class="syn-keyword">as</span> <span class="syn-variable">go</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">3</span>
+              <span class="code-line-content"><span class="syn-keyword">from</span> <span class="syn-variable">sklearn.decomposition</span> <span class="syn-keyword">import</span> <span class="syn-class">PCA</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">4</span>
+              <span class="code-line-content"></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">5</span>
+              <span class="code-line-content"><span class="syn-decorator">@st.cache_resource</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">6</span>
+              <span class="code-line-content"><span class="syn-keyword">def</span> <span class="syn-function">load_model</span><span class="syn-operator">():</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">7</span>
+              <span class="code-line-content">    <span class="syn-keyword">return</span> <span class="syn-class">SentenceTransformer</span><span class="syn-operator">(</span><span class="syn-string">'all-mpnet-base-v2'</span><span class="syn-operator">)</span></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">8</span>
+              <span class="code-line-content"></span>
+            </div>
+            <div class="code-line">
+              <span class="code-line-num">9</span>
+              <span class="code-line-content"><span class="syn-comment"># Reduce 768D embeddings to 3D</span></span>
+            </div>
+            <div class="code-line highlighted">
+              <span class="code-line-num">10</span>
+              <span class="code-line-content"><span class="syn-variable">pca</span> <span class="syn-operator">=</span> <span class="syn-class">PCA</span><span class="syn-operator">(</span><span class="syn-param">n_components</span><span class="syn-operator">=</span><span class="syn-number">3</span><span class="syn-operator">)</span></span>
+            </div>
+            <div class="code-line highlighted">
+              <span class="code-line-num">11</span>
+              <span class="code-line-content"><span class="syn-variable">reduced</span> <span class="syn-operator">=</span> <span class="syn-variable">pca</span><span class="syn-operator">.</span><span class="syn-function">fit_transform</span><span class="syn-operator">(</span><span class="syn-variable">all_embeddings</span><span class="syn-operator">)</span></span>
+            </div>
+          </div>
+        </div>
+
+        <h2 id="results">Results & Takeaways</h2>
+
+        <p>
+          Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Cum sociis natoque 
+          penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla vitae elit libero, 
+          a pharetra augue. <strong>Nullam quis risus eget urna</strong> mollis ornare vel eu leo.
+        </p>
+
+        <p>
+          Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Maecenas sed diam eget 
+          risus varius blandit sit amet non magna. Etiam porta sem malesuada magna mollis euismod. 
+          Cras mattis consectetur purus sit amet fermentum.
+        </p>
+
+        <hr>
+
+        <p>
+          <em>
+            The tool is live at 
+            <a href="#">latent-space-sampler.streamlit.app</a> — try it with your own sentences. 
+            The full source is on <a href="#">GitHub</a>.
+          </em>
+        </p>
+
+      </div>
+
+      <!-- POST FOOTER -->
+      <div class="post-footer">
+
+        <!-- Share -->
+        <div class="share-bar">
+          <span class="share-label">$ share --via</span>
+          <a href="#" class="share-btn">Twitter/X</a>
+          <a href="#" class="share-btn">LinkedIn</a>
+          <a href="#" class="share-btn">Copy link</a>
+          <a href="#" class="share-btn">RSS</a>
+        </div>
+
+        <!-- Author Card -->
+        <div class="author-card">
+          <div class="author-avatar">AD</div>
+          <div class="author-info">
+            <div class="author-name">Arnav Dasgupta</div>
+            <div class="author-bio">Backend engineer building distributed systems at SAP Labs India. Writes about debugging, scale, and the occasional ML experiment.</div>
+          </div>
+          <button class="author-follow">$ follow</button>
+        </div>
+
+        <!-- Next / Prev -->
+        <div class="post-nav">
+          <a href="#" class="post-nav-item prev">
+            <div class="post-nav-label">&larr; previous post</div>
+            <div class="post-nav-title">The 90% Seek Mystery: Debugging Apple TV on Budget Android Hardware</div>
+          </a>
+          <a href="#" class="post-nav-item next">
+            <div class="post-nav-label">next post &rarr;</div>
+            <div class="post-nav-title">Building a RAG Pipeline That Actually Works</div>
+          </a>
+        </div>
+      </div>
+
+    </article>
+
+    <!-- TABLE OF CONTENTS — Sidebar -->
+    <aside class="toc-sidebar">
+      <div class="toc-label">// on this page</div>
+      <ul class="toc-list">
+        <li class="toc-item active">
+          <a href="#the-problem" class="toc-link">
+            <span class="toc-num">01</span> The Problem
+          </a>
+        </li>
+        <li class="toc-item">
+          <a href="#embeddings" class="toc-link">
+            <span class="toc-num">02</span> What Are Sentence Embeddings?
+          </a>
+        </li>
+        <li class="toc-item">
+          <a href="#cosine-similarity" class="toc-link">
+            <span class="toc-num">03</span> Cosine Similarity
+          </a>
+        </li>
+        <li class="toc-item">
+          <a href="#pca-reduction" class="toc-link">
+            <span class="toc-num">04</span> PCA: From 768D to 3D
+          </a>
+        </li>
+        <li class="toc-item sub">
+          <a href="#anchor-trick" class="toc-link">
+            <span class="toc-num">4.1</span> The Anchor Trick
+          </a>
+        </li>
+        <li class="toc-item">
+          <a href="#implementation" class="toc-link">
+            <span class="toc-num">05</span> Putting It All Together
+          </a>
+        </li>
+        <li class="toc-item">
+          <a href="#results" class="toc-link">
+            <span class="toc-num">06</span> Results & Takeaways
+          </a>
+        </li>
+      </ul>
+
+      <!-- Reading Progress -->
+      <div class="reading-progress">
+        <div class="progress-label">
+          <span>reading progress</span>
+          <span>35%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div><span class="prompt">~$</span> <span style="color:var(--text-muted)">exit 0</span></div>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">YouTube</a>
+        <a href="#">Email</a>
+      </div>
+      <div># (c) 2026 arnav dasgupta</div>
+    </div>
+  </footer>
+
+</body>
+</html>
