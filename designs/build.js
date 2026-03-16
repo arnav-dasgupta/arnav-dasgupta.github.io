@@ -26,6 +26,8 @@ const CONTENT_DIR = path.join(__dirname, 'content', 'posts');
 const OUTPUT_DIR = path.join(__dirname, 'posts');
 const TEMPLATE_PATH = path.join(__dirname, 'templates', 'post.html');
 const BLOG_DATA_PATH = path.join(__dirname, 'blog', 'posts.json');
+const CONTENT_IMAGES_DIR = path.join(__dirname, 'content', 'images');
+const OUTPUT_IMAGES_DIR = path.join(__dirname, 'images');
 
 // Configure marked with syntax highlighting
 marked.setOptions({
@@ -125,6 +127,33 @@ function formatDate(date) {
 
 function getISODate(date) {
   return new Date(date).toISOString().split('T')[0];
+}
+
+// Copy images from content/images to root images directory
+function copyImages() {
+  if (!fs.existsSync(CONTENT_IMAGES_DIR)) {
+    return 0;
+  }
+  
+  if (!fs.existsSync(OUTPUT_IMAGES_DIR)) {
+    fs.mkdirSync(OUTPUT_IMAGES_DIR, { recursive: true });
+  }
+  
+  const images = fs.readdirSync(CONTENT_IMAGES_DIR);
+  let copied = 0;
+  
+  for (const image of images) {
+    const src = path.join(CONTENT_IMAGES_DIR, image);
+    const dest = path.join(OUTPUT_IMAGES_DIR, image);
+    
+    // Only copy files, not directories
+    if (fs.statSync(src).isFile()) {
+      fs.copyFileSync(src, dest);
+      copied++;
+    }
+  }
+  
+  return copied;
 }
 
 // Read all markdown files
@@ -251,6 +280,12 @@ async function build() {
   const blogDir = path.dirname(BLOG_DATA_PATH);
   if (!fs.existsSync(blogDir)) {
     fs.mkdirSync(blogDir, { recursive: true });
+  }
+  
+  // Copy images from content/images to root images/
+  const imagesCopied = copyImages();
+  if (imagesCopied > 0) {
+    console.log(`📷 Copied ${imagesCopied} image(s) to images/\n`);
   }
   
   // Read template

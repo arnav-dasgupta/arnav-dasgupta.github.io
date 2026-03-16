@@ -104,7 +104,7 @@ embeddings = model.encode([<span class="hljs-string">&quot;Batman is Bruce Wayne
 <br>
 <br>
 
-<p><img src="../content/images/embeddding-pipeline.png" alt="Embedding Pipeline" title="A sentence enters the model and exits as a 768-dimensional vector"></p>
+<p><img src="../images/embeddding-pipeline.png" alt="Embedding Pipeline" title="A sentence enters the model and exits as a 768-dimensional vector"></p>
 <br>
 
 
@@ -132,7 +132,7 @@ embeddings = model.encode([<span class="hljs-string">&quot;Batman is Bruce Wayne
     <pre class="code-body"><code class="hljs language-python">cos_sim = np.dot(embeddings[<span class="hljs-number">0</span>], embeddings[<span class="hljs-number">1</span>]) / (
     np.linalg.norm(embeddings[<span class="hljs-number">0</span>]) * np.linalg.norm(embeddings[<span class="hljs-number">1</span>])
 )</code></pre>
-  </div><p><img src="../content/images/cosine-similarity.png.png" alt="Cosine Similarity" title="Two vectors from the origin with the angle between them labeled"></p>
+  </div><p><img src="../images/cosine-similarity.png.png" alt="Cosine Similarity" title="Two vectors from the origin with the angle between them labeled"></p>
 <p><strong>Diagram: &quot;Cosine Similarity&quot;</strong> -- <em>Two arrows from the origin in 2D. When the angle between them is small (say 10 degrees), cosine similarity is high (~0.98) -- the sentences mean similar things. When the angle is close to 90 degrees, cosine similarity drops to ~0 -- semantically unrelated.</em></p>
 <p>One design decision worth highlighting: in the app, <strong>cosine similarity is computed on the full 768-dimensional embeddings</strong>, not on the 3D-reduced coordinates. This is critical. The 3D plot is an approximation for human eyes; the similarity score is mathematically exact. Computing it after dimensionality reduction would introduce compounding information loss -- you&#39;d be measuring a shadow of the real relationship.</p>
 <h2 id="the-visualization-problem-768-dimensions-into-3">The Visualization Problem: 768 Dimensions Into 3</h2><p>So we have two 768-dimensional vectors and a similarity score. But how do you <em>show</em> that to a human? We can perceive three spatial dimensions, and even that calls for an interactive 3D chart to do well.</p>

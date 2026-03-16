@@ -36,7 +36,7 @@ Each of those 768 numbers represents some learned feature of the sentence. These
 <br>
 <br>
 
-![Embedding Pipeline](../content/images/embeddding-pipeline.png "A sentence enters the model and exits as a 768-dimensional vector")
+![Embedding Pipeline](../images/embeddding-pipeline.png "A sentence enters the model and exits as a 768-dimensional vector")
 
 
 <br>
@@ -66,7 +66,7 @@ cos_sim = np.dot(embeddings[0], embeddings[1]) / (
 )
 ```
 
-![Cosine Similarity](../content/images/cosine-similarity.png.png "Two vectors from the origin with the angle between them labeled")
+![Cosine Similarity](../images/cosine-similarity.png.png "Two vectors from the origin with the angle between them labeled")
 
 **Diagram: "Cosine Similarity"** -- *Two arrows from the origin in 2D. When the angle between them is small (say 10 degrees), cosine similarity is high (~0.98) -- the sentences mean similar things. When the angle is close to 90 degrees, cosine similarity drops to ~0 -- semantically unrelated.*
 
