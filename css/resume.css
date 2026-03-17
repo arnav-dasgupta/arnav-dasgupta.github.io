@@ -1,0 +1,321 @@
+/* ============================================
+   RESUME PAGE STYLES
+   ============================================ */
+
+/* --------------------------------------------
+   PAGE LAYOUT
+   -------------------------------------------- */
+.resume-page {
+  padding-top: 48px;
+  min-height: 100vh;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* --------------------------------------------
+   PAGE HEADER
+   -------------------------------------------- */
+.page-header {
+  padding: 4rem 0 3rem;
+}
+
+.page-command {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.page-title {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.page-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+/* --------------------------------------------
+   CONTENT HEADER
+   -------------------------------------------- */
+.content-header {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.content-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border-color), transparent);
+}
+
+/* --------------------------------------------
+   DOWNLOAD SECTION
+   -------------------------------------------- */
+.download-section {
+  margin-bottom: 3rem;
+}
+
+.download-card {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  border: 1px solid var(--accent-green-dim);
+  border-radius: 12px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.download-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent-green);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-green-dim);
+  border-radius: 12px;
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
+.file-details {
+  min-width: 0;
+}
+
+.file-name {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.file-meta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-separator {
+  color: var(--text-dim);
+}
+
+.file-updated {
+  color: var(--accent-amber);
+}
+
+.btn-download {
+  padding: 1rem 1.75rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.btn-download:hover {
+  box-shadow: var(--glow-green);
+}
+
+/* --------------------------------------------
+   STATS SECTION
+   -------------------------------------------- */
+.stats-section {
+  margin-bottom: 3rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  margin-bottom: 0.35rem;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --------------------------------------------
+   HIGHLIGHTS SECTION
+   -------------------------------------------- */
+.highlights-section {
+  margin-bottom: 3rem;
+}
+
+.highlights-list {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.highlight-item:last-child {
+  border-bottom: none;
+}
+
+.highlight-marker {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-green);
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+
+.highlight-text {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* --------------------------------------------
+   CTA SECTION
+   -------------------------------------------- */
+.cta-section {
+  padding: 2rem 0 4rem;
+  text-align: center;
+}
+
+/* --------------------------------------------
+   RESPONSIVE
+   -------------------------------------------- */
+@media (max-width: 768px) {
+  .resume-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .page-header {
+    padding: 3rem 0 2rem;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .download-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .file-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .file-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .file-separator {
+    display: none;
+  }
+
+  .btn-download {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .highlights-list {
+    padding: 1rem 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .stat-value {
+    order: 2;
+    margin-bottom: 0;
+  }
+
+  .stat-label {
+    order: 1;
+  }
+}
